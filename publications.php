@@ -1,7 +1,9 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
+require ROOT_PATH . '/includes/content.php';
 require ROOT_PATH . '/includes/books.php';
+$content=pageContent('publications',['kicker'=>'✦ Books by Patrick E. Pennington','heading'=>'Publications','lead'=>'Scripture-grounded books written to bring biblical authority and the continuing work of the Holy Spirit into one faithful conversation.']);
 $books = allBooks();
 $pageTitle = 'Publications | Word Truth Spirit';
 $pageDescription = 'Books by Patrick E. Pennington on Scripture, truth, and the continuing work of the Holy Spirit.';
@@ -10,7 +12,7 @@ require ROOT_PATH . '/includes/header.php';
 ?>
 <main class="publications-page">
   <header class="page-hero publications-hero">
-    <div><p class="kicker">✦ &nbsp; Books by Patrick E. Pennington</p><h1>Publications</h1><p>Scripture-grounded books written to bring biblical authority and the continuing work of the Holy Spirit into one faithful conversation.</p></div>
+    <div><p class="kicker"><?=e($content['kicker'])?></p><h1><?=e($content['heading'])?></h1><p><?=e($content['lead'])?></p></div>
     <aside><span>Word</span><span>Truth</span><span>Spirit</span></aside>
   </header>
   <section class="book-catalog">

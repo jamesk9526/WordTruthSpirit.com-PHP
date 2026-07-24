@@ -1,0 +1,6 @@
+<?php
+declare(strict_types=1);
+require_once ROOT_PATH . '/config/database.php';
+function ensurePageContentTable(): bool { $db=database(); if(!$db)return false; try{$db->exec("CREATE TABLE IF NOT EXISTS wts_page_content (content_key VARCHAR(100) PRIMARY KEY, content_json TEXT NOT NULL, updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");return true;}catch(PDOException $e){return false;} }
+function pageContent(string $key,array $defaults): array { $db=database();if(!$db||!ensurePageContentTable())return $defaults;try{$s=$db->prepare('SELECT content_json FROM wts_page_content WHERE content_key=?');$s->execute([$key]);$data=json_decode((string)$s->fetchColumn(),true);return is_array($data)?array_merge($defaults,$data):$defaults;}catch(PDOException $e){return $defaults;} }
+function savePageContent(string $key,array $content): bool { $db=database();if(!$db||!ensurePageContentTable())return false;try{return $db->prepare('INSERT INTO wts_page_content (content_key,content_json) VALUES (?,?) ON DUPLICATE KEY UPDATE content_json=VALUES(content_json)')->execute([$key,json_encode($content,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)]);}catch(PDOException $e){return false;} }

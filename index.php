@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
+require ROOT_PATH . '/includes/content.php';
+$homeContent=pageContent('home',['kicker'=>'✦ Word Truth Spirit','heading'=>'Where Scripture and Spirit belong together.','lead'=>'Clear biblical teaching for believers who value the authority of God’s Word and the active ministry of the Holy Spirit.']);$foundationContent=pageContent('foundation',['kicker'=>'✦ Explore the foundation','heading'=>'One faith. Three essential themes.','lead'=>'']);
 $pageTitle = 'Word Truth Spirit | Patrick E. Pennington';
 $activePage = 'home';
 require __DIR__ . '/includes/header.php';
@@ -8,9 +10,9 @@ require __DIR__ . '/includes/header.php';
 <main>
   <section class="home-hero">
     <div class="hero-copy">
-      <p class="kicker">✦ &nbsp; Word Truth Spirit</p>
-      <h1>Where Scripture and Spirit belong together.</h1>
-      <p class="hero-lead">Clear biblical teaching for believers who value the authority of God’s Word and the active ministry of the Holy Spirit.</p>
+      <p class="kicker"><?=e($homeContent['kicker'])?></p>
+      <h1><?=e($homeContent['heading'])?></h1>
+      <p class="hero-lead"><?=e($homeContent['lead'])?></p>
       <div class="button-row">
         <a class="button button-primary" href="<?= url('blog/') ?>">Read the journal <span>→</span></a>
         <a class="button-link" href="<?= url('commitments.php') ?>">Our commitments <span>→</span></a>
@@ -29,8 +31,8 @@ require __DIR__ . '/includes/header.php';
 
   <section class="theme-section">
     <div class="section-intro">
-      <p class="kicker kicker-light">✦ &nbsp; Explore the foundation</p>
-      <h2>One faith. Three essential themes.</h2>
+      <p class="kicker kicker-light"><?=e($foundationContent['kicker'])?></p>
+      <h2><?=e($foundationContent['heading'])?></h2>
     </div>
     <div class="theme-grid">
       <a href="<?= url('word.php') ?>"><span>01</span><h3>Word</h3><p>Receiving Scripture as the preserved and trustworthy Word of God.</p><strong>Explore →</strong></a>

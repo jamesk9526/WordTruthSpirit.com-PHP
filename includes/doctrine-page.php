@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
+require ROOT_PATH . '/includes/content.php';
 require ROOT_PATH . '/includes/posts.php';
 $pages = require __DIR__ . '/page-data.php';
 $page = $pages[$pageKey];
+$pageContent=pageContent($pageKey,['kicker'=>'✦ Word Truth Spirit','heading'=>$page['title'],'lead'=>$page['intro']]);
 $pageTitle = $page['title'] . ' | Word Truth Spirit';
 $activePage = $pageKey;
 $relatedPosts = postsForTag($pageKey);
@@ -11,9 +13,9 @@ require __DIR__ . '/header.php';
 ?>
 <main class="inner-page">
   <header class="page-hero">
-    <p class="kicker">✦ &nbsp; Word Truth Spirit</p>
-    <h1><?= e($page['title']) ?></h1>
-    <p><?= e($page['intro']) ?></p>
+    <p class="kicker"><?= e($pageContent['kicker']) ?></p>
+    <h1><?= e($pageContent['heading']) ?></h1>
+    <p><?= e($pageContent['lead']) ?></p>
   </header>
   <article class="doctrine-layout">
     <aside class="article-aside"><span><?= strtoupper(e($page['title'])) ?></span><p>Scripture · Doctrine · Practice</p></aside>
