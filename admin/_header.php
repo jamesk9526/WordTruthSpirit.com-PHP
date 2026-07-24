@@ -28,6 +28,7 @@ $currentAdminPage = $currentAdminPage ?? '';
       <p>Site controls</p>
       <a class="<?= $currentAdminPage === 'seo' ? 'active' : '' ?>" href="<?= url('admin/seo.php') ?>"><span>⌕</span>SEO studio</a>
       <a class="<?= $currentAdminPage === 'settings' ? 'active' : '' ?>" href="<?= url('admin/settings.php') ?>"><span>⚙</span>Promotions &amp; SMTP</a>
+      <a class="<?= $currentAdminPage === 'updates' ? 'active' : '' ?>" href="<?= url('admin/updates.php') ?>"><span>↻</span>Database updates</a>
     </nav>
     <div class="admin-sidebar-bottom"><a href="<?= url() ?>">↗ View public site</a><a href="<?= url('admin/logout.php') ?>">Sign out</a></div>
   </aside>
