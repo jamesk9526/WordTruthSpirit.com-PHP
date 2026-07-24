@@ -28,8 +28,8 @@ require __DIR__ . '/header.php';
   </article>
   <?php if ($relatedPosts): ?>
   <section class="doctrine-journal" aria-label="Related journal reflections">
-    <header><div><p class="kicker">From the journal</p><h2>Reflections on <?= e(ucfirst($pageKey)) ?></h2><p>More Scripture-rooted writing connected to this theme.</p></div><div class="carousel-controls"><button type="button" data-carousel-prev aria-label="Previous reflections">←</button><button type="button" data-carousel-next aria-label="Next reflections">→</button></div></header>
-    <div class="doctrine-carousel" data-doctrine-carousel>
+    <header><div><p class="kicker">From the journal</p><h2>Reflections on <?= e(ucfirst($pageKey)) ?></h2><p>More Scripture-rooted writing connected to this theme.</p></div><a class="button-link" href="<?= url('blog/') ?>">View all reflections →</a></header>
+    <div class="doctrine-masonry">
       <?php foreach ($relatedPosts as $post): ?><article class="doctrine-post-card"><p class="post-meta"><?= date('M j, Y', strtotime($post['published_at'])) ?> · <?= (int)$post['reading_minutes'] ?> min read</p><h3><?= e($post['title']) ?></h3><p><?= e($post['excerpt']) ?></p><a href="<?= url('blog/post.php?slug=' . urlencode($post['slug'])) ?>">Read reflection →</a></article><?php endforeach; ?>
     </div>
   </section>

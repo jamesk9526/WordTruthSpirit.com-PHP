@@ -26,6 +26,7 @@ $currentAdminPage = $currentAdminPage ?? '';
       <a class="<?= $currentAdminPage === 'subscribers' ? 'active' : '' ?>" href="<?= url('admin/subscribers.php') ?>"><span>◎</span>Subscribers</a>
       <a class="<?= $currentAdminPage === 'campaigns' ? 'active' : '' ?>" href="<?= url('admin/campaigns.php') ?>"><span>↗</span>Campaigns</a>
       <p>Site controls</p>
+      <a class="<?= $currentAdminPage === 'seo' ? 'active' : '' ?>" href="<?= url('admin/seo.php') ?>"><span>⌕</span>SEO studio</a>
       <a class="<?= $currentAdminPage === 'settings' ? 'active' : '' ?>" href="<?= url('admin/settings.php') ?>"><span>⚙</span>Promotions &amp; SMTP</a>
     </nav>
     <div class="admin-sidebar-bottom"><a href="<?= url() ?>">↗ View public site</a><a href="<?= url('admin/logout.php') ?>">Sign out</a></div>

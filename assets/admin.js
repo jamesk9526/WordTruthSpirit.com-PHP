@@ -7,7 +7,23 @@
   });
 
   const form = document.querySelector('[data-post-editor]');
-  if (!form) return;
+  if (!form) {
+    const seoForm = document.querySelector('[data-seo-form]');
+    if (!seoForm) return;
+    const title = seoForm.querySelector('[data-seo-title]'); const description = seoForm.querySelector('[data-seo-description]'); const keyword = seoForm.querySelector('[data-seo-keyword]');
+    const score = document.querySelector('[data-seo-score]'); const checks = document.querySelector('[data-seo-checks]');
+    const refreshSeo = () => {
+      const titleText = title.value.trim(), descriptionText = description.value.trim(), key = keyword.value.trim().toLowerCase();
+      const titleOkay = titleText.length >= 30 && titleText.length <= 60, descriptionOkay = descriptionText.length >= 120 && descriptionText.length <= 160;
+      const keyInTitle = key && titleText.toLowerCase().includes(key), keyInDescription = key && descriptionText.toLowerCase().includes(key);
+      const points = (titleOkay?30:10)+(descriptionOkay?30:10)+(keyInTitle?20:0)+(keyInDescription?15:0)+(titleText.includes('Word Truth Spirit')?5:0);
+      score.textContent = points; seoForm.querySelector('[data-title-count]').textContent = titleText.length; seoForm.querySelector('[data-description-count]').textContent = descriptionText.length;
+      document.querySelector('[data-preview-title]').textContent = titleText || 'Page title'; document.querySelector('[data-preview-description]').textContent = descriptionText || 'Write a clear, compelling description for this page.';
+      document.querySelector('[data-preview-url]').textContent = `wordtruthspirit.com${window.wtsSeoPagePath || '/'}`;
+      checks.innerHTML = [[titleOkay,'Title is between 30–60 characters'],[descriptionOkay,'Description is between 120–160 characters'],[keyInTitle,'Focus keyword appears in the title'],[keyInDescription,'Focus keyword appears in the description'],[titleText.includes('Word Truth Spirit'),'Brand name included in the title']].map(([pass,text]) => `<li class="${pass?'pass':'needs-work'}">${pass?'✓':'○'} ${text}</li>`).join('');
+    };
+    [title,description,keyword].forEach(input => input.addEventListener('input', refreshSeo)); seoForm.querySelector('[data-seo-page]').addEventListener('change', event => { location.search = `?page=${encodeURIComponent(event.target.value)}`; }); refreshSeo(); return;
+  }
   const canvas = form.querySelector('[data-editor-surface]');
   const source = form.querySelector('[data-editor-source]');
   const output = form.querySelector('[data-editor-output]');

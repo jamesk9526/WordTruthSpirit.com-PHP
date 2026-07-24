@@ -1,8 +1,14 @@
 <?php
 require_once ROOT_PATH . '/includes/settings.php';
+require_once ROOT_PATH . '/includes/analytics.php';
+require_once ROOT_PATH . '/includes/seo.php';
+recordPublicPageView();
 $experience = siteExperience();
 $activePage = $activePage ?? '';
 $pageTitle = $pageTitle ?? 'Word Truth Spirit';
+$seoOverride = seoPage(seoPageKey());
+if (!empty($seoOverride['meta_title'])) $pageTitle = $seoOverride['meta_title'];
+if (!empty($seoOverride['meta_description'])) $pageDescription = $seoOverride['meta_description'];
 ?>
 <!doctype html>
 <html lang="en">
