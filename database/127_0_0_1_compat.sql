@@ -33,6 +33,27 @@ CREATE TABLE IF NOT EXISTS `wts_tags` (
   UNIQUE KEY `wts_tags_slug` (`slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `wts_seo_pages` (
+  `page_key` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `meta_title` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta_description` text COLLATE utf8mb4_unicode_ci,
+  `focus_keyword` varchar(160) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`page_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `wts_page_views` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `viewed_on` date NOT NULL,
+  `visitor_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `page_path` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `referrer_host` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_wts_views_day` (`viewed_on`),
+  KEY `idx_wts_views_path_day` (`page_path`(190),`viewed_on`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO `wts_books`
   (`slug`,`title`,`subtitle`,`description`,`cover_image`,`purchase_url`,`format_details`,`published_year`,`display_order`,`status`)
 VALUES
