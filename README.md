@@ -33,6 +33,21 @@ administrator. After that, sign in to:
 
 Admin passwords are stored using PHP's current `PASSWORD_DEFAULT` hash.
 
+## Promotions, email, and subscriptions
+
+The admin **Promotions & SMTP** screen controls the public announcement banner,
+welcome popup, contact notification recipient, and SMTP delivery configuration.
+SMTP credentials are saved in the local `.env` file and are never displayed
+again in the admin.
+
+Subscribers receive a confirmation link before becoming active. Every email
+campaign includes a fresh unsubscribe link. Campaigns send only to active
+subscribers and record delivery totals in the original database's
+`notification_campaigns` table when that table is available.
+
+Set `APP_URL` in `.env` to the public HTTPS address before sending
+confirmation or campaign email, so email links point to the live website.
+
 For a subfolder installation, set `APP_BASE_PATH`, for example `/wordtruthspirit`.
 
 ## Using `127_0_0_1.sql`

@@ -1,5 +1,5 @@
 <?php
-$experience = require_once ROOT_PATH . '/includes/settings.php';
+require_once ROOT_PATH . '/includes/settings.php';
 $experience = siteExperience();
 $activePage = $activePage ?? '';
 $pageTitle = $pageTitle ?? 'Word Truth Spirit';
