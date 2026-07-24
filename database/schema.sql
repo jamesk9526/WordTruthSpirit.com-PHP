@@ -1,0 +1,39 @@
+-- Safe to run alongside other applications in the same MySQL database.
+-- All Word Truth Spirit tables use the wts_ prefix.
+CREATE TABLE IF NOT EXISTS wts_posts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug VARCHAR(190) NOT NULL UNIQUE,
+  title VARCHAR(255) NOT NULL,
+  category VARCHAR(40) NOT NULL DEFAULT 'general',
+  excerpt TEXT NULL,
+  body LONGTEXT NOT NULL,
+  author VARCHAR(120) NOT NULL DEFAULT 'Patrick E. Pennington',
+  reading_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 5,
+  status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
+  published_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_wts_posts_status_date (status, published_at),
+  INDEX idx_wts_posts_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_contact_messages (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  subject VARCHAR(160) NOT NULL DEFAULT 'General Inquiry',
+  message TEXT NOT NULL,
+  ip_address VARCHAR(45) NULL,
+  status ENUM('new','read','replied','archived') NOT NULL DEFAULT 'new',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_wts_contact_status (status, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_subscribers (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  status ENUM('pending','active','unsubscribed') NOT NULL DEFAULT 'pending',
+  token CHAR(64) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
