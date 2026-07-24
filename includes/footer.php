@@ -6,7 +6,7 @@
 <footer class="site-footer">
   <div><h2>Word Truth Spirit ❦</h2><p>Patrick E. Pennington · Author &amp; Teacher</p><p><em>“Verbum et Spiritus Veritatis”</em></p><p>Biblical Defense of Traditional Pentecostalism</p></div>
   <nav aria-label="Footer navigation"><h3>Navigation ❦</h3><a href="<?= url() ?>">Home</a><a href="<?= url('word.php') ?>">Word</a><a href="<?= url('truth.php') ?>">Truth</a><a href="<?= url('spirit.php') ?>">Spirit</a><a href="<?= url('publications.php') ?>">Publications</a><a href="<?= url('blog/') ?>">Blog</a><a href="<?= url('contact.php') ?>">Contact</a></nav>
-  <div><h3>Connect ❦</h3><p>Follow for updates on biblical teachings and resources.</p><a class="footer-button" href="<?= url('contact.php') ?>">Contact Us</a><form class="paypal-donate" action="https://www.paypal.com/donate" method="post" target="_top"><input type="hidden" name="hosted_button_id" value="RRW8F7NRZ4VDQ"><input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button"><img alt="" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1"></form></div>
+  <div><h3>Connect ❦</h3><p>Follow for updates on biblical teachings and resources.</p><a class="footer-button" href="<?= url('contact.php') ?>">Contact Us</a><a class="footer-button" href="<?= url('donate/') ?>">Support the ministry</a></div>
   <small>© <?= date('Y') ?> Patrick E. Pennington. All rights reserved.</small>
 </footer>
 <script src="<?= url('assets/site.js') ?>"></script>

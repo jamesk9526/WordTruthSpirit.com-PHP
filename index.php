@@ -77,6 +77,11 @@ require __DIR__ . '/includes/header.php';
     </div>
   </section>
 
+  <section class="ministry-support">
+    <div><p class="kicker">✦ &nbsp; Support Word Truth Spirit</p><h2>Help keep biblical teaching available.</h2></div>
+    <div><p>Your support helps sustain free reflections, Scripture-centered resources, and the ongoing work of this ministry.</p><a class="button button-primary" href="<?= url('donate/') ?>">Support the ministry →</a></div>
+  </section>
+
   <section class="journal-callout">
     <div><p class="kicker kicker-light">✦ &nbsp; From the journal</p><h2>Thoughtful teaching for an everyday faith.</h2></div>
     <div><p>Read reflections on Scripture, spiritual formation, truth, and life in the Spirit.</p><a class="button button-light" href="<?= url('blog/') ?>">Browse all reflections →</a></div>
