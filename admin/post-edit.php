@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require __DIR__ . '/auth.php';
 requireAdmin();
+require ROOT_PATH . '/includes/tags.php';
 
 $db = database();
 $legacy = databaseUsesLegacySchema();
@@ -24,6 +25,7 @@ if ($id) {
     }
 }
 $post = $post ?: ['title'=>'','slug'=>'','category'=>'general','excerpt'=>'','body'=>'','author'=>'Patrick E. Pennington','reading_minutes'=>5,'status'=>'draft','published_at'=>date('Y-m-d\\TH:i'),'tags'=>'','cover_image'=>'','meta_title'=>'','meta_description'=>'','featured'=>false];
+$availableTags = allTags();
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -96,7 +98,7 @@ require __DIR__ . '/_header.php';
   </section>
   <aside class="editor-sidebar">
     <section class="admin-panel"><h2>Publishing</h2><label>Status<select name="status"><?php foreach(['draft','published','archived'] as $status): ?><option value="<?= $status ?>" <?= $post['status'] === $status ? 'selected' : '' ?>><?= ucfirst($status) ?></option><?php endforeach; ?></select></label><label>Publish date<input type="datetime-local" name="published_at" value="<?= e($post['published_at'] ? date('Y-m-d\\TH:i', strtotime($post['published_at'])) : '') ?>"></label><label>Reading minutes<input type="number" min="1" name="reading_minutes" value="<?= (int) $post['reading_minutes'] ?>"></label><label>Author<input name="author" value="<?= e($post['author']) ?>"></label><label class="check-label"><input type="checkbox" name="featured" value="1" <?= !empty($post['featured']) ? 'checked' : '' ?>> Feature this reflection</label><button class="button button-primary editor-save" type="submit">Save reflection</button><a class="editor-cancel" href="<?= url('admin/posts.php') ?>">Cancel</a></section>
-    <section class="admin-panel editor-details"><h2>Story details</h2><label>Topics / tags<input name="tags" value="<?= e($post['tags']) ?>" placeholder="Scripture, discipleship, prayer"></label><label>Cover image URL<input name="cover_image" value="<?= e($post['cover_image']) ?>" placeholder="assets/images/my-cover.jpg"></label><p>Use a public image path or a full HTTPS image URL.</p></section>
+    <section class="admin-panel editor-details"><h2>Story details</h2><label>Topics / tags<input name="tags" list="tag-suggestions" value="<?= e($post['tags']) ?>" placeholder="Scripture, discipleship, prayer"></label><datalist id="tag-suggestions"><?php foreach ($availableTags as $tag): ?><option value="<?= e($tag) ?>"><?php endforeach; ?></datalist><a class="editor-tags-link" href="<?= url('admin/tags.php') ?>">Manage custom tags →</a><label>Cover image URL<input name="cover_image" value="<?= e($post['cover_image']) ?>" placeholder="assets/images/my-cover.jpg"></label><p>Separate multiple tags with commas. Use a public image path or a full HTTPS image URL.</p></section>
     <section class="admin-panel editor-details"><h2>Search & sharing</h2><label>SEO title<input name="meta_title" maxlength="500" value="<?= e($post['meta_title']) ?>" placeholder="Defaults to reflection title"></label><label>Meta description<textarea name="meta_description" rows="4" maxlength="1000" placeholder="Defaults to the excerpt."><?= e($post['meta_description']) ?></textarea></label><p>These fields help search engines and shared links present the article clearly.</p></section>
     <section class="admin-panel editor-insights"><h2>Writing insights</h2><p><strong data-word-count>0</strong> words</p><p><strong data-read-time>1</strong> min estimated read</p><p>Posts are saved as clean HTML and displayed with the same formatting on the public journal.</p></section>
   </aside>

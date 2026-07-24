@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once ROOT_PATH . '/config/database.php';
+require_once ROOT_PATH . '/includes/tags.php';
 
 function seedPosts(): array
 {
@@ -48,4 +49,14 @@ function findPost(string $slug): ?array
         if ($post['slug'] === $slug) return $post;
     }
     return null;
+}
+
+function postsForTag(string $tag, int $limit = 8): array
+{
+    $needle = mb_strtolower(trim($tag));
+    return array_slice(array_values(array_filter(allPosts(), function (array $post) use ($needle): bool {
+        if (mb_strtolower((string) ($post['category'] ?? '')) === $needle) return true;
+        foreach (postTags((string) ($post['tags'] ?? '')) as $postTag) if (mb_strtolower($postTag) === $needle) return true;
+        return false;
+    })), 0, $limit);
 }

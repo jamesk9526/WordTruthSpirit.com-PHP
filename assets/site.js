@@ -40,6 +40,23 @@ filters.forEach(button => button.addEventListener('click', () => {
 }));
 search?.addEventListener('input', filterPosts);
 
+const readingProgress = document.querySelector('[data-reading-progress]');
+if (readingProgress) {
+  const updateReadingProgress = () => {
+    const article = document.querySelector('.author-article');
+    if (!article) return;
+    const start = article.offsetTop;
+    const length = Math.max(1, article.offsetHeight - window.innerHeight);
+    const percent = Math.min(100, Math.max(0, ((window.scrollY - start) / length) * 100));
+    readingProgress.style.width = `${percent}%`;
+  };
+  addEventListener('scroll', updateReadingProgress, { passive: true }); updateReadingProgress();
+}
+document.querySelector('[data-copy-link]')?.addEventListener('click', async (event) => {
+  try { await navigator.clipboard.writeText(location.href); event.currentTarget.textContent = 'Link copied'; }
+  catch (_) { event.currentTarget.textContent = 'Copy unavailable'; }
+});
+
 const promotionPopup = document.querySelector('[data-promotion-popup]');
 if (promotionPopup) {
   const popupKey = `wts-popup-dismissed:${promotionPopup.dataset.popupId || 'default'}`;

@@ -66,5 +66,7 @@ function updateEnvironment(array $changes): bool
     $temporary = $file . '.tmp-' . bin2hex(random_bytes(4));
     if (file_put_contents($temporary, implode(PHP_EOL, $remaining) . PHP_EOL, LOCK_EX) === false) return false;
     if (!rename($temporary, $file)) { @unlink($temporary); return false; }
-    @chmod($file, 0600); return true;
+    @chmod($file, 0600);
+    foreach ($changes as $key => $value) putenv($key . '=' . (string) $value);
+    return true;
 }
