@@ -30,6 +30,25 @@ CREATE TABLE IF NOT EXISTS wts_tags (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS wts_seo_pages (
+  page_key VARCHAR(80) PRIMARY KEY,
+  meta_title VARCHAR(500) NULL,
+  meta_description TEXT NULL,
+  focus_keyword VARCHAR(160) NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_page_views (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  viewed_on DATE NOT NULL,
+  visitor_hash CHAR(64) NOT NULL,
+  page_path VARCHAR(500) NOT NULL,
+  referrer_host VARCHAR(190) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_wts_views_day (viewed_on),
+  INDEX idx_wts_views_path_day (page_path(190), viewed_on)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS wts_contact_messages (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
