@@ -1,3 +1,4 @@
 /data/messages.jsonl
 .env
+.setup-complete
 .DS_Store

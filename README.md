@@ -49,3 +49,16 @@ Import `127_0_0_1.sql`, set `DB_NAME=wts`, and then run
 `database/127_0_0_1_compat.sql`. The compatibility migration adds only
 `wts_books`, because the original export has no publications table. It does not
 alter or duplicate the original posts, users, subscribers, or messages.
+
+### Guided setup
+
+For a fresh installation, open `/setup/` in the browser. The installer:
+
+1. Tests the supplied MySQL credentials
+2. Verifies that the target `wts` database is empty or does not exist
+3. Validates and imports `127_0_0_1.sql`
+4. Applies `database/127_0_0_1_compat.sql`
+5. Writes the local `.env` connection file
+6. Creates `.setup-complete` so the installer cannot run again accidentally
+
+The MySQL account needs permission to create the `wts` database and its tables.
