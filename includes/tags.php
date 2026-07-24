@@ -20,16 +20,27 @@ function ensureTagTable(): bool
     } catch (PDOException $exception) { error_log('Tag table creation failed: ' . $exception->getMessage()); return false; }
 }
 
+function ensureWriterPostColumns(): void
+{
+    $db = database();
+    if (!$db || databaseUsesLegacySchema() || !databaseTableExists('wts_posts')) return;
+    try {
+        $columns = $db->query('SHOW COLUMNS FROM wts_posts')->fetchAll(PDO::FETCH_COLUMN);
+        $definitions = ['tags'=>'TEXT NULL','cover_image'=>'VARCHAR(2048) NULL','meta_title'=>'VARCHAR(500) NULL','meta_description'=>'TEXT NULL','featured'=>'TINYINT(1) NOT NULL DEFAULT 0'];
+        foreach ($definitions as $column => $definition) if (!in_array($column, $columns, true)) $db->exec("ALTER TABLE wts_posts ADD COLUMN {$column} {$definition}");
+    } catch (PDOException $exception) { error_log('Writer column migration failed: ' . $exception->getMessage()); }
+}
+
 function allTags(): array
 {
     $tags = [];
     $db = database();
     if ($db) {
         try {
+            ensureWriterPostColumns();
             if (ensureTagTable()) foreach ($db->query('SELECT name FROM wts_tags ORDER BY name')->fetchAll(PDO::FETCH_COLUMN) as $tag) $tags[mb_strtolower($tag)] = $tag;
             $table = databaseUsesLegacySchema() ? 'posts' : 'wts_posts';
-            $column = databaseUsesLegacySchema() ? 'tags' : null;
-            if ($column) foreach ($db->query("SELECT tags FROM {$table} WHERE tags IS NOT NULL AND tags<>''")->fetchAll(PDO::FETCH_COLUMN) as $raw) foreach (postTags((string)$raw) as $tag) $tags[mb_strtolower($tag)] = $tag;
+            foreach ($db->query("SELECT tags FROM {$table} WHERE tags IS NOT NULL AND tags<>''")->fetchAll(PDO::FETCH_COLUMN) as $raw) foreach (postTags((string)$raw) as $tag) $tags[mb_strtolower($tag)] = $tag;
         } catch (PDOException $exception) { error_log('Tag lookup failed: ' . $exception->getMessage()); }
     }
     ksort($tags, SORT_NATURAL | SORT_FLAG_CASE);

@@ -22,6 +22,17 @@ CREATE TABLE IF NOT EXISTS `wts_books` (
   KEY `idx_wts_books_status_order` (`status`,`display_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `wts_tags` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `wts_tags_name` (`name`),
+  UNIQUE KEY `wts_tags_slug` (`slug`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO `wts_books`
   (`slug`,`title`,`subtitle`,`description`,`cover_image`,`purchase_url`,`format_details`,`published_year`,`display_order`,`status`)
 VALUES

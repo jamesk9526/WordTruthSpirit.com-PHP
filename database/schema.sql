@@ -8,6 +8,11 @@ CREATE TABLE IF NOT EXISTS wts_posts (
   excerpt TEXT NULL,
   body LONGTEXT NOT NULL,
   author VARCHAR(120) NOT NULL DEFAULT 'Patrick E. Pennington',
+  tags TEXT NULL,
+  cover_image VARCHAR(2048) NULL,
+  meta_title VARCHAR(500) NULL,
+  meta_description TEXT NULL,
+  featured TINYINT(1) NOT NULL DEFAULT 0,
   reading_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 5,
   status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
   published_at DATETIME NULL,
@@ -15,6 +20,14 @@ CREATE TABLE IF NOT EXISTS wts_posts (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_wts_posts_status_date (status, published_at),
   INDEX idx_wts_posts_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_tags (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(80) NOT NULL UNIQUE,
+  slug VARCHAR(100) NOT NULL UNIQUE,
+  description VARCHAR(255) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS wts_contact_messages (

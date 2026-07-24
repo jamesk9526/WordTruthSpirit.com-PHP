@@ -3,6 +3,7 @@ declare(strict_types=1);
 require __DIR__ . '/auth.php';
 requireAdmin();
 require ROOT_PATH . '/includes/tags.php';
+ensureWriterPostColumns();
 
 $db = database();
 $legacy = databaseUsesLegacySchema();
@@ -56,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 else { $sql='INSERT INTO posts (title,slug,category,excerpt,content,author,read_time,published,date,tags,cover_image,meta_title,meta_description,featured) VALUES (:title,:slug,:category,:excerpt,:content,:author,:read_time,:published,:date,:tags,:cover_image,:meta_title,:meta_description,:featured)'; }
                 $db->prepare($sql)->execute($legacyValues);
             } else {
-                if ($id) { $sql='UPDATE wts_posts SET title=:title,slug=:slug,category=:category,excerpt=:excerpt,body=:body,author=:author,reading_minutes=:reading_minutes,status=:status,published_at=:published_at WHERE id=:id'; $values['id']=$id; }
-                else { $sql='INSERT INTO wts_posts (title,slug,category,excerpt,body,author,reading_minutes,status,published_at) VALUES (:title,:slug,:category,:excerpt,:body,:author,:reading_minutes,:status,:published_at)'; }
+                if ($id) { $sql='UPDATE wts_posts SET title=:title,slug=:slug,category=:category,excerpt=:excerpt,body=:body,author=:author,reading_minutes=:reading_minutes,status=:status,published_at=:published_at,tags=:tags,cover_image=:cover_image,meta_title=:meta_title,meta_description=:meta_description,featured=:featured WHERE id=:id'; $values['id']=$id; }
+                else { $sql='INSERT INTO wts_posts (title,slug,category,excerpt,body,author,reading_minutes,status,published_at,tags,cover_image,meta_title,meta_description,featured) VALUES (:title,:slug,:category,:excerpt,:body,:author,:reading_minutes,:status,:published_at,:tags,:cover_image,:meta_title,:meta_description,:featured)'; }
                 $db->prepare($sql)->execute($values);
             }
             header('Location:' . url('admin/posts.php?saved=1')); exit;

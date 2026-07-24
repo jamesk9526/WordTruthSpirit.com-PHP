@@ -57,6 +57,13 @@ document.querySelector('[data-copy-link]')?.addEventListener('click', async (eve
   catch (_) { event.currentTarget.textContent = 'Copy unavailable'; }
 });
 
+const doctrineCarousel = document.querySelector('[data-doctrine-carousel]');
+if (doctrineCarousel) {
+  const shiftCarousel = (direction) => doctrineCarousel.scrollBy({ left: direction * Math.min(420, doctrineCarousel.clientWidth * .82), behavior: 'smooth' });
+  document.querySelector('[data-carousel-prev]')?.addEventListener('click', () => shiftCarousel(-1));
+  document.querySelector('[data-carousel-next]')?.addEventListener('click', () => shiftCarousel(1));
+}
+
 const promotionPopup = document.querySelector('[data-promotion-popup]');
 if (promotionPopup) {
   const popupKey = `wts-popup-dismissed:${promotionPopup.dataset.popupId || 'default'}`;
