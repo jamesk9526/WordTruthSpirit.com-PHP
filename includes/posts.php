@@ -30,9 +30,9 @@ function allPosts(): array
     if ($db) {
         try {
             if (databaseUsesLegacySchema()) {
-                $rows = $db->query("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body FROM posts WHERE published=1 ORDER BY date DESC")->fetchAll();
+                $rows = $db->query("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body,tags,cover_image,meta_title,meta_description,featured FROM posts WHERE published=1 ORDER BY featured DESC,date DESC")->fetchAll();
             } else {
-                $rows = $db->query("SELECT slug,title,category,published_at,reading_minutes,author,excerpt,body FROM wts_posts WHERE status='published' ORDER BY published_at DESC")->fetchAll();
+                $rows = $db->query("SELECT slug,title,category,published_at,reading_minutes,author,excerpt,body,NULL AS tags,NULL AS cover_image,NULL AS meta_title,NULL AS meta_description,0 AS featured FROM wts_posts WHERE status='published' ORDER BY published_at DESC")->fetchAll();
             }
             if ($rows) return $rows;
         } catch (PDOException $error) {

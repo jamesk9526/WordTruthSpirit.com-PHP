@@ -3,7 +3,8 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/posts.php';
 $posts = allPosts();
-$featured = findPost('jesus-was-both-word-and-spirit') ?? $posts[0];
+$featuredPosts = array_values(array_filter($posts, fn(array $post): bool => !empty($post['featured'])));
+$featured = $featuredPosts[0] ?? findPost('jesus-was-both-word-and-spirit') ?? $posts[0];
 $pageTitle = 'Journal | Word Truth Spirit';
 $pageDescription = 'Scripture-rooted reflections for everyday discipleship.';
 $activePage = 'blog';
@@ -12,8 +13,8 @@ require ROOT_PATH . '/includes/header.php';
 ?>
 <main class="blog-page">
   <section class="blog-hero">
-    <div><p class="kicker">✦ &nbsp; Word Truth Spirit Journal</p><h1>Thoughtful reflections for a faith that lives beyond Sunday.</h1><p>Scripture-rooted teaching, honest questions, and practical encouragement for everyday discipleship.</p><a class="button button-primary" href="#latest-reflections">Explore reflections →</a></div>
-    <aside><span>Word · Truth · Spirit</span><strong>Essays &amp;<br>Reflections</strong><small>Written by Patrick E. Pennington</small></aside>
+    <div><p class="kicker">✦ &nbsp; Word Truth Spirit Journal</p><h1>Letters for a faith that lives beyond Sunday.</h1><p>Scripture-rooted teaching, honest questions, and practical encouragement from the desk of Patrick E. Pennington.</p><a class="button button-primary" href="#latest-reflections">Explore reflections →</a></div>
+    <aside><span>Word · Truth · Spirit</span><strong>Essays &amp;<br>Reflections</strong><small>By Patrick E. Pennington</small></aside>
   </section>
 
   <section class="subscribe-panel">
@@ -22,7 +23,7 @@ require ROOT_PATH . '/includes/header.php';
   </section>
 
   <article class="featured-post">
-    <div class="post-monogram">WTS</div>
+    <?php if (!empty($featured['cover_image'])): ?><div class="featured-cover"><img src="<?= e($featured['cover_image']) ?>" alt=""></div><?php else: ?><div class="post-monogram">WTS</div><?php endif; ?>
     <div><p class="kicker">Featured reflection · <?= e($featured['category']) ?></p><p class="post-meta"><?= date('F j, Y', strtotime($featured['published_at'])) ?> · <?= (int) $featured['reading_minutes'] ?> min read</p><h2><a href="<?= url('blog/post.php?slug=' . urlencode($featured['slug'])) ?>"><?= e($featured['title']) ?></a></h2><p><?= e($featured['excerpt']) ?></p><a class="button-link" href="<?= url('blog/post.php?slug=' . urlencode($featured['slug'])) ?>">Read the reflection →</a></div>
   </article>
 
@@ -34,6 +35,7 @@ require ROOT_PATH . '/includes/header.php';
     <div class="post-grid" data-post-grid>
       <?php foreach ($posts as $post): ?>
         <article data-post data-category="<?= e($post['category']) ?>" data-search="<?= e(mb_strtolower($post['title'] . ' ' . $post['excerpt'])) ?>">
+          <?php if (!empty($post['cover_image'])): ?><img class="post-card-cover" src="<?= e($post['cover_image']) ?>" alt=""><?php endif; ?>
           <div class="category-mark"><?= e(strtoupper(mb_substr($post['category'], 0, 1))) ?><span><?= e($post['category']) ?></span></div>
           <p class="post-meta"><?= date('F j, Y', strtotime($post['published_at'])) ?> · <?= (int) $post['reading_minutes'] ?> min read</p>
           <h3><a href="<?= url('blog/post.php?slug=' . urlencode($post['slug'])) ?>"><?= e($post['title']) ?></a></h3>
