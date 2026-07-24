@@ -34,3 +34,18 @@ administrator. After that, sign in to:
 Admin passwords are stored using PHP's current `PASSWORD_DEFAULT` hash.
 
 For a subfolder installation, set `APP_BASE_PATH`, for example `/wordtruthspirit`.
+
+## Using `127_0_0_1.sql`
+
+The PHP site automatically detects the schema in the supplied Node-site export.
+When it is present, the site uses its existing:
+
+- `posts` table for the public journal and admin journal editor
+- `users` table for administrator login
+- `contact_messages` table for contact submissions
+- `email_subscribers` table for subscriptions
+
+Import `127_0_0_1.sql`, set `DB_NAME=wts`, and then run
+`database/127_0_0_1_compat.sql`. The compatibility migration adds only
+`wts_books`, because the original export has no publications table. It does not
+alter or duplicate the original posts, users, subscribers, or messages.

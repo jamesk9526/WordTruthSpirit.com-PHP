@@ -2,6 +2,19 @@
 declare(strict_types=1);
 
 define('ROOT_PATH', dirname(__DIR__));
+
+$environmentFile = ROOT_PATH . '/.env';
+if (is_file($environmentFile)) {
+    foreach (file($environmentFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) continue;
+        [$key, $value] = array_map('trim', explode('=', $line, 2));
+        if (preg_match('/^[A-Z][A-Z0-9_]*$/', $key) && getenv($key) === false) {
+            putenv($key . '=' . trim($value, "\"'"));
+        }
+    }
+}
+
 define('BASE_PATH', rtrim((string) (getenv('APP_BASE_PATH') ?: ''), '/'));
 
 function url(string $path = ''): string
