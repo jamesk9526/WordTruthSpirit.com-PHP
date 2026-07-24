@@ -23,7 +23,7 @@ $pageTitle = $pageTitle ?? 'Word Truth Spirit';
   </a>
   <button class="menu-button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
   <nav id="primary-nav" aria-label="Primary navigation">
-    <?php foreach (['home'=>'Home','word'=>'Word','truth'=>'Truth','spirit'=>'Spirit','blog'=>'Blog','commitments'=>'Commitments','contact'=>'Contact'] as $key => $label): ?>
+    <?php foreach (['home'=>'Home','word'=>'Word','truth'=>'Truth','spirit'=>'Spirit','publications'=>'Publications','blog'=>'Blog','commitments'=>'Commitments','contact'=>'Contact'] as $key => $label): ?>
       <?php $href = $key === 'home' ? url() : ($key === 'blog' ? url('blog/') : url($key . '.php')); ?>
       <a class="<?= $activePage === $key ? 'active' : '' ?>" href="<?= $href ?>"><?= $label ?></a>
     <?php endforeach; ?>

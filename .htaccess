@@ -4,7 +4,7 @@ DirectoryIndex index.php
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteRule ^blog/([a-z0-9-]+)/?$ blog/post.php?slug=$1 [QSA,L]
-RewriteRule ^(word|truth|spirit|commitments|contact)/?$ $1.php [L]
+RewriteRule ^(word|truth|spirit|publications|commitments|contact)/?$ $1.php [L]
 </IfModule>
 
 <FilesMatch "^\.env">

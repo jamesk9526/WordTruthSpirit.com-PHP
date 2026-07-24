@@ -1,0 +1,3 @@
+<?php $adminTitle = $adminTitle ?? 'Dashboard'; ?>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title><?= e($adminTitle) ?> | WTS Admin</title><link rel="stylesheet" href="<?= url('assets/styles.css') ?>"></head>
+<body class="admin-body"><header class="admin-header"><a href="<?= url('admin/') ?>"><img src="<?= url('assets/images/logo.png') ?>" alt=""> WTS Admin</a><?php if (adminLoggedIn()): ?><nav><a href="<?= url('admin/') ?>">Dashboard</a><a href="<?= url('admin/books.php') ?>">Publications</a><a href="<?= url('admin/posts.php') ?>">Journal</a><a href="<?= url() ?>">View site</a><a href="<?= url('admin/logout.php') ?>">Sign out</a></nav><?php endif; ?></header><main class="admin-main">

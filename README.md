@@ -1,8 +1,8 @@
 # Word Truth Spirit PHP Site
 
 A responsive multi-page PHP version of the Word Truth Spirit website, including
-a filterable journal, individual reflection pages, contact handling, email
-subscriptions, and optional MySQL persistence.
+a filterable journal, a publications catalog, individual reflection pages,
+contact handling, email subscriptions, administration, and MySQL persistence.
 
 ## Local use
 
@@ -20,5 +20,17 @@ fall back to `data/messages.jsonl`.
    `DB_PASS`.
 3. Insert or import published posts into `wts_posts`. Database posts replace the
    bundled fallback data automatically.
+
+## Administration
+
+After connecting MySQL and running `database/schema.sql`, visit `/admin/`.
+The first visit opens a one-time setup screen for creating the first
+administrator. After that, sign in to:
+
+- Add, edit, publish, archive, reorder, or delete books
+- Add, edit, publish, archive, or delete journal reflections
+- See publication, journal, and unread-message totals
+
+Admin passwords are stored using PHP's current `PASSWORD_DEFAULT` hash.
 
 For a subfolder installation, set `APP_BASE_PATH`, for example `/wordtruthspirit`.
