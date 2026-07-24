@@ -7,6 +7,7 @@ $featured = findPost('jesus-was-both-word-and-spirit') ?? $posts[0];
 $pageTitle = 'Journal | Word Truth Spirit';
 $pageDescription = 'Scripture-rooted reflections for everyday discipleship.';
 $activePage = 'blog';
+$subscribeStatus = (string) ($_GET['subscribe'] ?? '');
 require ROOT_PATH . '/includes/header.php';
 ?>
 <main class="blog-page">
@@ -17,7 +18,7 @@ require ROOT_PATH . '/includes/header.php';
 
   <section class="subscribe-panel">
     <div><p class="kicker kicker-light">Stay connected</p><h2>Never miss a new reflection.</h2><p>We’ll only reach out when a new post is published.</p></div>
-    <form action="<?= url('api/subscribe.php') ?>" method="post"><label for="subscriber-email">Email updates</label><div><input id="subscriber-email" type="email" name="email" placeholder="you@example.com" required><button class="button button-light" type="submit">Subscribe</button></div><small>No noise. Unsubscribe anytime.</small></form>
+    <form action="<?= url('api/subscribe.php') ?>" method="post"><label for="subscriber-email">Email updates</label><div><input id="subscriber-email" type="email" name="email" placeholder="you@example.com" required><button class="button button-light" type="submit">Subscribe</button></div><small>No noise. Unsubscribe anytime.</small><?php if ($subscribeStatus === 'pending'): ?><p class="subscribe-notice">Check your inbox to confirm your subscription.</p><?php elseif ($subscribeStatus === 'active'): ?><p class="subscribe-notice">That email is already subscribed.</p><?php elseif ($subscribeStatus === 'mail-error'): ?><p class="subscribe-notice">We saved your request, but could not send a confirmation email. Please try again later.</p><?php elseif ($subscribeStatus === 'error'): ?><p class="subscribe-notice">Please enter a valid email address.</p><?php endif; ?></form>
   </section>
 
   <article class="featured-post">

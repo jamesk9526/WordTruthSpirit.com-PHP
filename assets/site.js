@@ -39,3 +39,17 @@ filters.forEach(button => button.addEventListener('click', () => {
   filterPosts();
 }));
 search?.addEventListener('input', filterPosts);
+
+const promotionPopup = document.querySelector('[data-promotion-popup]');
+if (promotionPopup) {
+  const popupKey = `wts-popup-dismissed:${promotionPopup.dataset.popupId || 'default'}`;
+  const showPopup = () => { promotionPopup.classList.add('visible'); promotionPopup.setAttribute('aria-hidden', 'false'); };
+  if (!sessionStorage.getItem(popupKey)) {
+    const delay = Math.max(0, Number(promotionPopup.dataset.delay || 5)) * 1000;
+    window.setTimeout(showPopup, delay);
+  }
+  promotionPopup.querySelector('[data-popup-close]')?.addEventListener('click', () => {
+    sessionStorage.setItem(popupKey, '1'); promotionPopup.classList.remove('visible'); promotionPopup.setAttribute('aria-hidden', 'true');
+  });
+  promotionPopup.addEventListener('click', (event) => { if (event.target === promotionPopup) promotionPopup.querySelector('[data-popup-close]')?.click(); });
+}

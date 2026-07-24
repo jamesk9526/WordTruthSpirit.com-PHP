@@ -1,4 +1,6 @@
 <?php
+$experience = require_once ROOT_PATH . '/includes/settings.php';
+$experience = siteExperience();
 $activePage = $activePage ?? '';
 $pageTitle = $pageTitle ?? 'Word Truth Spirit';
 ?>
@@ -29,9 +31,8 @@ $pageTitle = $pageTitle ?? 'Word Truth Spirit';
     <?php endforeach; ?>
   </nav>
 </header>
-<aside class="announcement" data-announcement>
-  <p>Celebrate 250! For a limited time get the ebook, <em>The Spirit of Truth</em> for only $2.50!</p>
-  <a href="https://www.amazon.com/dp/B0GCVNK21K" rel="noopener">Get the eBook.</a>
-  <button type="button" aria-label="Dismiss announcement">×</button>
-</aside>
+<?php if (!empty($experience['announcement']['enabled'])): ?><aside class="announcement" data-announcement>
+  <p><?= e($experience['announcement']['message']) ?></p><a href="<?= e($experience['announcement']['actionUrl']) ?>" rel="noopener"><?= e($experience['announcement']['actionLabel']) ?></a><button type="button" aria-label="Dismiss announcement">×</button>
+</aside><?php endif; ?>
+<?php if (!empty($experience['popup']['enabled'])): ?><aside class="promotion-popup" data-promotion-popup data-delay="<?= (int) $experience['popup']['delaySeconds'] ?>" data-popup-id="<?= e($experience['popup']['id']) ?>" aria-hidden="true"><div class="promotion-popup-card"><button type="button" data-popup-close aria-label="Close offer">×</button><p class="kicker"><?= e($experience['popup']['eyebrow']) ?></p><h2><?= e($experience['popup']['title']) ?></h2><p><?= e($experience['popup']['body']) ?></p><a class="button button-primary" href="<?= e($experience['popup']['actionUrl']) ?>"><?= e($experience['popup']['actionLabel']) ?> →</a></div></aside><?php endif; ?>
 <div id="content"></div>

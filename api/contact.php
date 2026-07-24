@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/config/database.php';
+require ROOT_PATH . '/includes/mailer.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit('Method not allowed'); }
 if (!empty($_POST['website'] ?? '')) { header('Location: ' . url('contact.php?status=success'), true, 303); exit; }
@@ -31,5 +32,13 @@ if (!$saved) {
     $directory = ROOT_PATH . '/data';
     if (!is_dir($directory)) mkdir($directory, 0750, true);
     $saved = file_put_contents($directory . '/messages.jsonl', json_encode(['created_at'=>gmdate('c'),'name'=>$name,'email'=>$email,'subject'=>$subject,'message'=>$message], JSON_UNESCAPED_SLASHES) . PHP_EOL, FILE_APPEND | LOCK_EX) !== false;
+}
+if ($saved && smtpConfigured()) {
+    $recipient = (string) (getenv('CONTACT_TO_EMAIL') ?: appSetting('email.contactToEmail', ''));
+    if ($recipient !== '') {
+        $subjectLine = 'Website inquiry: ' . ($subject ?: 'General Inquiry');
+        $body = '<p><strong>From:</strong> ' . e($name) . ' &lt;' . e($email) . '&gt;</p><p><strong>Subject:</strong> ' . e($subject ?: 'General Inquiry') . '</p><p>' . nl2br(e($message)) . '</p>';
+        smtpSend($recipient, $subjectLine, $body);
+    }
 }
 header('Location: ' . url('contact.php?status=' . ($saved ? 'success' : 'error')), true, 303);
