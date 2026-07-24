@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
+require ROOT_PATH . '/includes/content.php';
+$content=pageContent('contact',['kicker'=>'✦ Connect','heading'=>'Contact','lead'=>'Get in touch with questions, comments, or ministry inquiries.']);
 $pageTitle = 'Contact | Word Truth Spirit';
 $activePage = 'contact';
 $status = (string) ($_GET['status'] ?? '');
 require __DIR__ . '/includes/header.php';
 ?>
 <main class="inner-page">
-  <header class="page-hero compact"><p class="kicker">✦ &nbsp; Connect</p><h1>Contact</h1><p>Get in touch with questions, comments, or ministry inquiries.</p></header>
+  <header class="page-hero compact"><p class="kicker"><?=e($content['kicker'])?></p><h1><?=e($content['heading'])?></h1><p><?=e($content['lead'])?></p></header>
   <section class="contact-layout">
     <aside>
       <h2>About the Author</h2><p>Patrick E. Pennington is the author of <em>The Spirit of Truth</em>—a Biblical defense of Traditional Pentecostalism.</p>

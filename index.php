@@ -23,7 +23,7 @@ require __DIR__ . '/includes/header.php';
     </div>
     <aside class="verse-card">
       <p>A word for the reader</p>
-      <span class="ornament">❦</span>
+      <span class="ornament">✦</span>
       <blockquote>“God is a Spirit: and they that worship him must worship him in spirit and in truth.”</blockquote>
       <cite>John 4:24</cite>
     </aside>

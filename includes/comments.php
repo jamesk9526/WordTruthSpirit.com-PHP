@@ -1,0 +1,5 @@
+<?php
+declare(strict_types=1);
+require_once ROOT_PATH . '/config/database.php';
+function ensureCommentsTable(): bool { $db=database();if(!$db)return false;try{$db->exec("CREATE TABLE IF NOT EXISTS wts_blog_comments (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,post_slug VARCHAR(190) NOT NULL,name VARCHAR(120) NOT NULL,email VARCHAR(190) NOT NULL,body TEXT NOT NULL,status ENUM('pending','approved','spam','trash') NOT NULL DEFAULT 'pending',created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX idx_wts_comments_post (post_slug,status,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");return true;}catch(PDOException $e){return false;} }
+function approvedComments(string $slug): array {$db=database();if(!$db||!ensureCommentsTable())return [];try{$s=$db->prepare("SELECT name,body,created_at FROM wts_blog_comments WHERE post_slug=? AND status='approved' ORDER BY created_at ASC");$s->execute([$slug]);return $s->fetchAll();}catch(PDOException $e){return [];} }

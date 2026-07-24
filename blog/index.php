@@ -2,6 +2,8 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/posts.php';
+require ROOT_PATH . '/includes/content.php';
+$content=pageContent('blog',['kicker'=>'✦ Word Truth Spirit Journal','heading'=>'Letters for a faith that lives beyond Sunday.','lead'=>'Scripture-rooted teaching, honest questions, and practical encouragement from the desk of Patrick E. Pennington.']);
 $posts = allPosts();
 $featuredPosts = array_values(array_filter($posts, fn(array $post): bool => !empty($post['featured'])));
 $featured = $featuredPosts[0] ?? findPost('jesus-was-both-word-and-spirit') ?? $posts[0];
@@ -13,7 +15,7 @@ require ROOT_PATH . '/includes/header.php';
 ?>
 <main class="blog-page">
   <section class="blog-hero">
-    <div><p class="kicker">✦ &nbsp; Word Truth Spirit Journal</p><h1>Letters for a faith that lives beyond Sunday.</h1><p>Scripture-rooted teaching, honest questions, and practical encouragement from the desk of Patrick E. Pennington.</p><a class="button button-primary" href="#latest-reflections">Explore reflections →</a></div>
+    <div><p class="kicker"><?=e($content['kicker'])?></p><h1><?=e($content['heading'])?></h1><p><?=e($content['lead'])?></p><a class="button button-primary" href="#latest-reflections">Explore reflections →</a></div>
     <aside><span>Word · Truth · Spirit</span><strong>Essays &amp;<br>Reflections</strong><small>By Patrick E. Pennington</small></aside>
   </section>
 

@@ -16,6 +16,7 @@ if (!empty($seoOverride['meta_description'])) $pageDescription = $seoOverride['m
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="<?= e($pageDescription ?? 'Biblical teaching where Scripture and Spirit belong together.') ?>">
+  <?php if($gscVerification=appSetting('seo.googleVerification','')):?><meta name="google-site-verification" content="<?=e($gscVerification)?>"><?php endif;?>
   <title><?= e($pageTitle) ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

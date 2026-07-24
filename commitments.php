@@ -1,12 +1,14 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
+require ROOT_PATH . '/includes/content.php';
+$content=pageContent('commitments',['kicker'=>'✦ Our commitments','heading'=>'Standing firm in biblical integrity.','lead'=>'We invite every reader to receive the Word with readiness of mind and search the Scriptures carefully.']);
 $pageTitle = 'Our Commitments | Word Truth Spirit';
 $activePage = 'commitments';
 require __DIR__ . '/includes/header.php';
 ?>
 <main class="inner-page">
-  <header class="page-hero"><p class="kicker">✦ &nbsp; Our commitments</p><h1>Standing firm in biblical integrity.</h1><p>We invite every reader to receive the Word with readiness of mind and search the Scriptures carefully.</p></header>
+  <header class="page-hero"><p class="kicker"><?=e($content['kicker'])?></p><h1><?=e($content['heading'])?></h1><p><?=e($content['lead'])?></p></header>
   <article class="commitments">
     <blockquote>“For this cause also thank we God without ceasing, because, when ye received the word of God… ye received it not as the word of men, but as it is in truth, the word of God.”<cite>— 1 Thessalonians 2:13</cite></blockquote>
     <section><span>01</span><div><h2>Not as the word of men</h2><p>The Word of God is a divine book of divine origin and should be approached with humility, reverence, and faith.</p></div></section>

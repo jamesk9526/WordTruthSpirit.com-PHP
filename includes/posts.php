@@ -49,6 +49,8 @@ function findPost(string $slug): ?array
     foreach (allPosts() as $post) {
         if ($post['slug'] === $slug) return $post;
     }
+    $db=database();
+    if($db && databaseUsesLegacySchema()) try { $s=$db->prepare("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body,tags,cover_image,meta_title,meta_description,featured FROM posts WHERE slug=? AND published=2");$s->execute([$slug]);return $s->fetch()?:null; } catch(PDOException $e) {}
     return null;
 }
 

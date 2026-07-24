@@ -18,6 +18,7 @@ $currentAdminPage = $currentAdminPage ?? '';
       <p>Workspace</p>
       <a class="<?= $currentAdminPage === 'dashboard' ? 'active' : '' ?>" href="<?= url('admin/') ?>"><span>▦</span>Dashboard</a>
       <a class="<?= $currentAdminPage === 'posts' ? 'active' : '' ?>" href="<?= url('admin/posts.php') ?>"><span>✦</span>Journal</a>
+      <a class="<?= $currentAdminPage === 'comments' ? 'active' : '' ?>" href="<?= url('admin/comments.php') ?>"><span>☷</span>Comments</a>
       <a class="<?= $currentAdminPage === 'tags' ? 'active' : '' ?>" href="<?= url('admin/tags.php') ?>"><span>#</span>Journal tags</a>
       <a class="<?= $currentAdminPage === 'books' ? 'active' : '' ?>" href="<?= url('admin/books.php') ?>"><span>▤</span>Publications</a>
       <p>Readers</p>

@@ -2,8 +2,10 @@
 declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/posts.php';
+require ROOT_PATH . '/includes/comments.php';
 $post = findPost((string) ($_GET['slug'] ?? ''));
 if (!$post) { http_response_code(404); $pageTitle = 'Reflection not found'; } else { $pageTitle = (!empty($post['meta_title']) ? $post['meta_title'] : $post['title']) . ' | Word Truth Spirit'; $pageDescription = !empty($post['meta_description']) ? $post['meta_description'] : $post['excerpt']; }
+$comments=$post?approvedComments($post['slug']):[];
 $activePage = 'blog';
 require ROOT_PATH . '/includes/header.php';
 ?>
@@ -18,6 +20,7 @@ require ROOT_PATH . '/includes/header.php';
     <?php if (!empty($post['tags'])): ?><div class="tag-list"><?php foreach (array_filter(array_map('trim', explode(',', $post['tags']))) as $tag): ?><span>#<?= e($tag) ?></span><?php endforeach; ?></div><?php endif; ?>
     <div class="post-body"><?= articleHtml($post['body']) ?><blockquote>“Sanctify them through thy truth: thy word is truth.”<cite>— John 17:17</cite></blockquote></div>
     <footer class="article-footer"><div class="author-signoff"><span><?= e(mb_strtoupper(mb_substr($post['author'], 0, 1))) ?></span><p>Written for readers seeking to hold fast to both the Word and the Spirit.</p></div><div><button class="button button-outline" type="button" data-copy-link>Copy article link</button> <a class="button button-outline" href="<?= url('blog/') ?>">← Journal</a></div></footer>
+    <section class="comments-section" id="comments"><p class="kicker">Reader responses</p><h2>Join the conversation</h2><?php if(($_GET['comment']??'')==='pending'):?><p class="notice success">Thank you. Your comment is awaiting moderation.</p><?php elseif(($_GET['comment']??'')==='error'):?><p class="notice error">Please complete the comment form and try again.</p><?php endif;?><?php foreach($comments as $comment):?><article class="public-comment"><header><strong><?=e($comment['name'])?></strong><small><?=date('F j, Y',strtotime($comment['created_at']))?></small></header><p><?=nl2br(e($comment['body']))?></p></article><?php endforeach;?><form class="comment-form" action="<?=url('api/comment.php')?>" method="post"><input type="hidden" name="slug" value="<?=e($post['slug'])?>"><label>Name<input name="name" maxlength="120" required></label><label>Email <small>(not published)</small><input type="email" name="email" maxlength="190" required></label><label>Comment<textarea name="body" rows="5" maxlength="4000" required></textarea></label><input class="honeypot" name="website" tabindex="-1" autocomplete="off"><button class="button button-primary">Submit for review</button></form></section>
   </article>
 <?php endif; ?>
 </main>
