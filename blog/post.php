@@ -13,7 +13,7 @@ require ROOT_PATH . '/includes/header.php';
 <?php else: ?>
   <article>
     <header><p class="kicker"><?= e($post['category']) ?> · Reflection</p><h1><?= e($post['title']) ?></h1><p class="post-meta"><?= date('F j, Y', strtotime($post['published_at'])) ?> · <?= (int) $post['reading_minutes'] ?> min read · By <?= e($post['author']) ?></p><p class="post-deck"><?= e($post['excerpt']) ?></p></header>
-    <div class="post-body"><?php foreach (preg_split('/\R\R+/', $post['body']) as $paragraph): ?><p><?= e($paragraph) ?></p><?php endforeach; ?><blockquote>“Sanctify them through thy truth: thy word is truth.”<cite>— John 17:17</cite></blockquote></div>
+    <div class="post-body"><?= articleHtml($post['body']) ?><blockquote>“Sanctify them through thy truth: thy word is truth.”<cite>— John 17:17</cite></blockquote></div>
     <footer><a class="button button-outline" href="<?= url('blog/') ?>">← Back to the journal</a></footer>
   </article>
 <?php endif; ?>

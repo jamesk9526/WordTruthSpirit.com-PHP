@@ -41,3 +41,31 @@ function database(): ?PDO
         return null;
     }
 }
+
+function databaseTableExists(string $table): bool
+{
+    static $cache = [];
+    if (array_key_exists($table, $cache)) return $cache[$table];
+    $db = database();
+    if (!$db || !preg_match('/^[a-zA-Z0-9_]+$/', $table)) return $cache[$table] = false;
+    try {
+        $statement = $db->prepare('SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?');
+        $statement->execute([$table]);
+        return $cache[$table] = (bool) $statement->fetchColumn();
+    } catch (PDOException $error) {
+        return $cache[$table] = false;
+    }
+}
+
+function databaseUsesLegacySchema(): bool
+{
+    return databaseTableExists('posts') && databaseTableExists('users');
+}
+
+function uuidV4(): string
+{
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($bytes), 4));
+}

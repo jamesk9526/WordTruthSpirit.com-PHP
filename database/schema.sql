@@ -64,3 +64,9 @@ CREATE TABLE IF NOT EXISTS wts_admin_users (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO wts_books
+  (slug,title,subtitle,description,cover_image,purchase_url,format_details,published_year,display_order,status)
+VALUES
+  ('the-spirit-of-truth','The Spirit of Truth','A Biblical Defense of Traditional Pentecostalism','A clear, Scripture-grounded case for the continuing work of the Holy Spirit without surrendering biblical order or discernment.','assets/images/book-cover.png','https://www.amazon.com/dp/B0GBVXPHVF','Paperback and eBook',2026,1,'published')
+ON DUPLICATE KEY UPDATE title=VALUES(title);

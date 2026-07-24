@@ -8,8 +8,13 @@ if (!$email) { header('Location: ' . url('blog/?subscribe=error'), true, 303); e
 $db = database();
 if ($db) {
     try {
-        $statement = $db->prepare('INSERT INTO wts_subscribers (email,status) VALUES (:email,"pending") ON DUPLICATE KEY UPDATE updated_at=CURRENT_TIMESTAMP');
-        $statement->execute(['email'=>$email]);
+        if (databaseUsesLegacySchema()) {
+            $statement = $db->prepare('INSERT INTO email_subscribers (id,email,status,unsubscribe_token_hash,source) VALUES (:id,:email,"pending",:token,"php-blog") ON DUPLICATE KEY UPDATE updated_at=CURRENT_TIMESTAMP');
+            $statement->execute(['id'=>uuidV4(),'email'=>$email,'token'=>hash('sha256',random_bytes(32))]);
+        } else {
+            $statement = $db->prepare('INSERT INTO wts_subscribers (email,status) VALUES (:email,"pending") ON DUPLICATE KEY UPDATE updated_at=CURRENT_TIMESTAMP');
+            $statement->execute(['email'=>$email]);
+        }
     } catch (PDOException $error) { error_log('Subscription insert failed: ' . $error->getMessage()); }
 }
 header('Location: ' . url('blog/?subscribe=success'), true, 303);

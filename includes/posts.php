@@ -29,7 +29,11 @@ function allPosts(): array
     $db = database();
     if ($db) {
         try {
-            $rows = $db->query("SELECT slug,title,category,published_at,reading_minutes,author,excerpt,body FROM wts_posts WHERE status='published' ORDER BY published_at DESC")->fetchAll();
+            if (databaseUsesLegacySchema()) {
+                $rows = $db->query("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body FROM posts WHERE published=1 ORDER BY date DESC")->fetchAll();
+            } else {
+                $rows = $db->query("SELECT slug,title,category,published_at,reading_minutes,author,excerpt,body FROM wts_posts WHERE status='published' ORDER BY published_at DESC")->fetchAll();
+            }
             if ($rows) return $rows;
         } catch (PDOException $error) {
             error_log('Blog query failed: ' . $error->getMessage());

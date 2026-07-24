@@ -69,7 +69,7 @@ require __DIR__ . '/includes/header.php';
         <li>Brings biblical authority and spiritual gifts into one conversation</li>
       </ul>
       <div class="button-row">
-        <a class="button button-primary" href="https://www.amazon.com/dp/B0GBVXPHVF" rel="noopener">View on Amazon →</a>
+        <a class="button button-primary" href="<?= url('publications.php') ?>">View publication →</a>
         <a class="button-link" href="<?= url('contact.php') ?>">Bulk orders or questions</a>
       </div>
     </div>

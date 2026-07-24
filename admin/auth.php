@@ -12,7 +12,10 @@ function adminCount(): int
 {
     $db = database();
     if (!$db) return 0;
-    try { return (int) $db->query('SELECT COUNT(*) FROM wts_admin_users')->fetchColumn(); }
+    try {
+        $table = databaseUsesLegacySchema() ? 'users' : 'wts_admin_users';
+        return (int) $db->query("SELECT COUNT(*) FROM {$table}")->fetchColumn();
+    }
     catch (PDOException $error) { return 0; }
 }
 function adminLoggedIn(): bool { return !empty($_SESSION['wts_admin_id']); }

@@ -18,8 +18,13 @@ $saved = false;
 $db = database();
 if ($db) {
     try {
-        $statement = $db->prepare('INSERT INTO wts_contact_messages (name,email,subject,message,ip_address) VALUES (:name,:email,:subject,:message,:ip)');
-        $saved = $statement->execute(['name'=>$name,'email'=>$email,'subject'=>$subject ?: 'General Inquiry','message'=>$message,'ip'=>$_SERVER['REMOTE_ADDR'] ?? null]);
+        if (databaseUsesLegacySchema()) {
+            $statement = $db->prepare('INSERT INTO contact_messages (id,name,email,subject,message,ip_address) VALUES (:id,:name,:email,:subject,:message,:ip)');
+            $saved = $statement->execute(['id'=>uuidV4(),'name'=>$name,'email'=>$email,'subject'=>$subject ?: 'General Inquiry','message'=>$message,'ip'=>$_SERVER['REMOTE_ADDR'] ?? null]);
+        } else {
+            $statement = $db->prepare('INSERT INTO wts_contact_messages (name,email,subject,message,ip_address) VALUES (:name,:email,:subject,:message,:ip)');
+            $saved = $statement->execute(['name'=>$name,'email'=>$email,'subject'=>$subject ?: 'General Inquiry','message'=>$message,'ip'=>$_SERVER['REMOTE_ADDR'] ?? null]);
+        }
     } catch (PDOException $error) { error_log('Contact insert failed: ' . $error->getMessage()); }
 }
 if (!$saved) {

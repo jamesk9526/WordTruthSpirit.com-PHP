@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
-require __DIR__.'/auth.php';requireAdmin();
-$db=database();$bookCount=(int)$db->query('SELECT COUNT(*) FROM wts_books')->fetchColumn();$postCount=(int)$db->query('SELECT COUNT(*) FROM wts_posts')->fetchColumn();$messageCount=(int)$db->query("SELECT COUNT(*) FROM wts_contact_messages WHERE status='new'")->fetchColumn();
+require __DIR__.'/auth.php';requireAdmin();require ROOT_PATH.'/includes/books.php';
+$db=database();
+$bookCount=databaseTableExists('wts_books')?(int)$db->query('SELECT COUNT(*) FROM wts_books')->fetchColumn():count(fallbackBooks());
+$postCount=(int)$db->query(databaseUsesLegacySchema()?'SELECT COUNT(*) FROM posts':'SELECT COUNT(*) FROM wts_posts')->fetchColumn();
+$messageCount=(int)$db->query(databaseUsesLegacySchema()?'SELECT COUNT(*) FROM contact_messages WHERE is_read=0':"SELECT COUNT(*) FROM wts_contact_messages WHERE status='new'")->fetchColumn();
 $adminTitle='Dashboard';require __DIR__.'/_header.php';
 ?>
 <header class="admin-title"><div><p class="kicker">Welcome back</p><h1><?=e($_SESSION['wts_admin_name']??'Administrator')?></h1></div></header>
