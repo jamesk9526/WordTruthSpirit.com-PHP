@@ -37,18 +37,37 @@ Admin passwords are stored using PHP's current `PASSWORD_DEFAULT` hash.
 
 The admin **Promotions & SMTP** screen controls the public announcement banner,
 welcome popup, contact notification recipient, and SMTP delivery configuration.
-SMTP credentials are saved in the local `.env` file and are never displayed
-again in the admin.
+It also controls the shared email signup copy and independently enables signup
+placements on the journal, at the end of reflections, in the site footer, and in
+a timed, dismissible bottom-page banner. SMTP credentials are saved in the local
+`.env` file and are never displayed again in the admin.
+
+The separate admin **Ads** workspace manages reusable homepage advertisements.
+Each ad can be assigned to the full-width top zone or right sidebar and includes
+an image upload or image URL, accessibility text, headline, message, offer badge,
+button, destination, display order, and active/hidden status. Ads can optionally
+publish individual detail pages under `/ads/{slug}/` with expanded content and
+their original advertiser call-to-action. The Bible Memory promotion is supplied
+as the default sidebar ad rather than a sitewide footer ad.
 
 Subscribers receive a confirmation link before becoming active. Every email
 campaign includes a fresh unsubscribe link. Campaigns send only to active
 subscribers and record delivery totals in the original database's
 `notification_campaigns` table when that table is available.
+Signup submissions return readers to the page and placement where they joined,
+and the legacy subscriber schema records the originating placement as its source.
 
 Set `APP_URL` in `.env` to the public HTTPS address before sending
 confirmation or campaign email, so email links point to the live website.
 
 For a subfolder installation, set `APP_BASE_PATH`, for example `/wordtruthspirit`.
+
+## Brand sprites
+
+The shared dove and winged-lamp artwork lives in `assets/images/spirit-dove.png`
+and `assets/images/winged-lamp.png`. Reusable CSS treatments place these marks in
+public and admin headers, hero accents, dark-section watermarks, and the global
+footer divider.
 
 ## Using `127_0_0_1.sql`
 

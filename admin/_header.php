@@ -8,12 +8,13 @@ $currentAdminPage = $currentAdminPage ?? '';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title><?= e($adminTitle) ?> | WTS Admin</title>
-  <link rel="stylesheet" href="<?= url('assets/styles.css') ?>">
+  <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260724f') ?>">
 </head>
 <body class="admin-body">
 <?php if (adminLoggedIn()): ?>
   <aside class="admin-sidebar" id="admin-sidebar">
     <a class="admin-brand" href="<?= url('admin/') ?>"><img src="<?= url('assets/images/logo.png') ?>" alt=""><span>Word Truth Spirit<small>Secure workspace</small></span></a>
+    <img class="admin-winged-sprite" src="<?=url('assets/images/winged-lamp.png')?>" alt="" aria-hidden="true">
     <nav aria-label="Administration">
       <p>Workspace</p>
       <a class="<?= $currentAdminPage === 'dashboard' ? 'active' : '' ?>" href="<?= url('admin/') ?>"><span>▦</span>Dashboard</a>
@@ -28,6 +29,7 @@ $currentAdminPage = $currentAdminPage ?? '';
       <a class="<?= $currentAdminPage === 'campaigns' ? 'active' : '' ?>" href="<?= url('admin/campaigns.php') ?>"><span>↗</span>Campaigns</a>
       <p>Site controls</p>
       <a class="<?= $currentAdminPage === 'content' ? 'active' : '' ?>" href="<?= url('admin/content.php') ?>"><span>¶</span>Page content</a>
+      <a class="<?= $currentAdminPage === 'ads' ? 'active' : '' ?>" href="<?= url('admin/ads.php') ?>"><span>▣</span>Ads</a>
       <a class="<?= $currentAdminPage === 'seo' ? 'active' : '' ?>" href="<?= url('admin/seo.php') ?>"><span>⌕</span>SEO studio</a>
       <a class="<?= $currentAdminPage === 'settings' ? 'active' : '' ?>" href="<?= url('admin/settings.php') ?>"><span>⚙</span>Promotions &amp; SMTP</a>
       <a class="<?= $currentAdminPage === 'updates' ? 'active' : '' ?>" href="<?= url('admin/updates.php') ?>"><span>↻</span>Database updates</a>
@@ -36,5 +38,5 @@ $currentAdminPage = $currentAdminPage ?? '';
   </aside>
 <?php endif; ?>
 <div class="admin-shell">
-  <?php if (adminLoggedIn()): ?><header class="admin-topbar"><button type="button" class="admin-menu-button" aria-controls="admin-sidebar" aria-expanded="false">Menu</button><span><?= e($adminTitle) ?></span><strong><?= e($_SESSION['wts_admin_name'] ?? 'Administrator') ?></strong></header><?php endif; ?>
+  <?php if (adminLoggedIn()): ?><header class="admin-topbar"><button type="button" class="admin-menu-button" aria-controls="admin-sidebar" aria-expanded="false">Menu</button><img class="admin-topbar-sprite" src="<?=url('assets/images/spirit-dove.png')?>" alt="" aria-hidden="true"><span><?= e($adminTitle) ?></span><strong><?= e($_SESSION['wts_admin_name'] ?? 'Administrator') ?></strong></header><?php endif; ?>
   <main class="admin-main">

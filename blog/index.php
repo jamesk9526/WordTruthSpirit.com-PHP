@@ -3,14 +3,18 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/posts.php';
 require ROOT_PATH . '/includes/content.php';
+require ROOT_PATH . '/includes/subscription.php';
+require ROOT_PATH . '/includes/ads.php';
 $content=pageContent('blog',['kicker'=>'✦ Word Truth Spirit Journal','heading'=>'Letters for a faith that lives beyond Sunday.','lead'=>'Scripture-rooted teaching, honest questions, and practical encouragement from the desk of Patrick E. Pennington.']);
 $posts = allPosts();
 $featuredPosts = array_values(array_filter($posts, fn(array $post): bool => !empty($post['featured'])));
-$featured = $featuredPosts[0] ?? findPost('jesus-was-both-word-and-spirit') ?? $posts[0];
+$featured = $featuredPosts[0] ?? findPost('jesus-was-both-word-and-spirit') ?? ($posts[0] ?? null);
+$categories=array_values(array_unique(array_map(fn(array $post):string=>(string)$post['category'],$posts)));
+sort($categories);
+$journalAds=adsForPlacement('journal_top');
 $pageTitle = 'Journal | Word Truth Spirit';
 $pageDescription = 'Scripture-rooted reflections for everyday discipleship.';
 $activePage = 'blog';
-$subscribeStatus = (string) ($_GET['subscribe'] ?? '');
 require ROOT_PATH . '/includes/header.php';
 ?>
 <main class="blog-page">
@@ -19,21 +23,26 @@ require ROOT_PATH . '/includes/header.php';
     <aside><span>Word · Truth · Spirit</span><strong>Essays &amp;<br>Reflections</strong><small>By Patrick E. Pennington</small></aside>
   </section>
 
-  <section class="subscribe-panel">
-    <div><p class="kicker kicker-light">Stay connected</p><h2>Never miss a new reflection.</h2><p>We’ll only reach out when a new post is published.</p></div>
-    <form action="<?= url('api/subscribe.php') ?>" method="post"><label for="subscriber-email">Email updates</label><div><input id="subscriber-email" type="email" name="email" placeholder="you@example.com" required><button class="button button-light" type="submit">Subscribe</button></div><small>No noise. Unsubscribe anytime.</small><?php if ($subscribeStatus === 'pending'): ?><p class="subscribe-notice">Check your inbox to confirm your subscription.</p><?php elseif ($subscribeStatus === 'active'): ?><p class="subscribe-notice">That email is already subscribed.</p><?php elseif ($subscribeStatus === 'mail-error'): ?><p class="subscribe-notice">We saved your request, but could not send a confirmation email. Please try again later.</p><?php elseif ($subscribeStatus === 'error'): ?><p class="subscribe-notice">Please enter a valid email address.</p><?php endif; ?></form>
-  </section>
+  <?php if($journalAds):?><section class="journal-ad-zone" aria-label="Featured partners"><header><span>Featured resources</span><small>Sponsored</small></header><?php foreach($journalAds as $ad)renderAdCard($ad,'journal');?></section><?php endif;?>
 
-  <article class="featured-post">
+  <?php $subscription=subscriptionSettings(); if($subscription['enabled']&&$subscription['placements']['blogPanel']): ?>
+  <section class="subscribe-panel">
+    <div><p class="kicker kicker-light"><?=e($subscription['eyebrow'])?></p><h2><?=e($subscription['title'])?></h2><p><?=e($subscription['body'])?></p></div>
+    <?php renderSubscriptionForm('journal-panel','light','email-signup-journal'); ?>
+  </section>
+  <?php endif; ?>
+
+  <?php if($featured):?><article class="featured-post">
     <?php if (!empty($featured['cover_image'])): ?><div class="featured-cover"><img src="<?= e($featured['cover_image']) ?>" alt=""></div><?php else: ?><div class="post-monogram">WTS</div><?php endif; ?>
     <div><p class="kicker">Featured reflection · <?= e($featured['category']) ?></p><p class="post-meta"><?= date('F j, Y', strtotime($featured['published_at'])) ?> · <?= (int) $featured['reading_minutes'] ?> min read</p><h2><a href="<?= url('blog/post.php?slug=' . urlencode($featured['slug'])) ?>"><?= e($featured['title']) ?></a></h2><p><?= e($featured['excerpt']) ?></p><a class="button-link" href="<?= url('blog/post.php?slug=' . urlencode($featured['slug'])) ?>">Read the reflection →</a></div>
-  </article>
+  </article><?php endif;?>
 
   <section class="journal-index" id="latest-reflections">
-    <header><div><p class="kicker">✦ &nbsp; Browse the journal</p><h2>Latest reflections</h2><p><span data-post-count><?= count($posts) ?></span> reflections found</p></div><label class="search-label">Search reflections<input type="search" placeholder="Search by title or topic" data-blog-search></label></header>
+    <header><div><p class="kicker">✦ &nbsp; Browse the journal</p><h2>Latest reflections</h2><p aria-live="polite"><span data-post-count><?= count($posts) ?></span> reflections found</p></div><label class="search-label">Search reflections<input type="search" placeholder="Search by title or topic" data-blog-search></label></header>
     <div class="filters" aria-label="Filter by category">
-      <?php foreach (['all','word','truth','spirit','general','christmas'] as $category): ?><button class="<?= $category === 'all' ? 'active' : '' ?>" type="button" data-category="<?= $category ?>"><?= ucfirst($category) ?></button><?php endforeach; ?>
+      <?php foreach (['all',...$categories] as $category): ?><button class="<?= $category === 'all' ? 'active' : '' ?>" type="button" data-category="<?= e($category) ?>" aria-pressed="<?= $category === 'all' ? 'true' : 'false' ?>"><?= ucfirst(e($category)) ?></button><?php endforeach; ?>
     </div>
+    <div class="journal-no-results" data-blog-empty hidden><span>⌕</span><h3>No reflections match those filters.</h3><p>Try another category or a broader search.</p></div>
     <div class="post-grid" data-post-grid>
       <?php foreach ($posts as $post): ?>
         <article data-post data-category="<?= e($post['category']) ?>" data-search="<?= e(mb_strtolower($post['title'] . ' ' . $post['excerpt'])) ?>">
@@ -45,6 +54,7 @@ require ROOT_PATH . '/includes/header.php';
           <footer><span>By <?= e($post['author']) ?></span><a href="<?= url('blog/post.php?slug=' . urlencode($post['slug'])) ?>">Read →</a></footer>
         </article>
       <?php endforeach; ?>
+      <?php if(!$posts):?><div class="journal-empty"><span>✦</span><h3>The next reflection is being prepared.</h3><p>Subscribe above to receive it when it is published.</p></div><?php endif;?>
     </div>
   </section>
 </main>

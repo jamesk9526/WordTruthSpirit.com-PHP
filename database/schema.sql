@@ -66,8 +66,39 @@ CREATE TABLE IF NOT EXISTS wts_subscribers (
   email VARCHAR(190) NOT NULL UNIQUE,
   status ENUM('pending','active','unsubscribed') NOT NULL DEFAULT 'pending',
   token CHAR(64) NULL,
+  source VARCHAR(80) NOT NULL DEFAULT 'website',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_settings (
+  setting_key VARCHAR(190) PRIMARY KEY,
+  setting_value LONGTEXT NULL,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_blog_comments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  post_slug VARCHAR(190) NOT NULL,
+  parent_id BIGINT UNSIGNED NULL,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  body TEXT NOT NULL,
+  status ENUM('pending','approved','spam','trash') NOT NULL DEFAULT 'pending',
+  author_hash CHAR(64) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL DEFAULT NULL,
+  INDEX idx_wts_comments_post (post_slug,status,created_at),
+  INDEX idx_wts_comments_parent (parent_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_comment_reactions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  comment_id BIGINT UNSIGNED NOT NULL,
+  voter_hash CHAR(64) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_wts_comment_reaction (comment_id,voter_hash),
+  INDEX idx_wts_comment_reactions_comment (comment_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS wts_books (

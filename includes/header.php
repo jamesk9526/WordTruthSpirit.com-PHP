@@ -21,7 +21,7 @@ if (!empty($seoOverride['meta_description'])) $pageDescription = $seoOverride['m
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260723b') ?>">
+  <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260724f') ?>">
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>
@@ -29,6 +29,7 @@ if (!empty($seoOverride['meta_description'])) $pageDescription = $seoOverride['m
   <a class="brand" href="<?= url() ?>" aria-label="Word Truth Spirit home">
     <img src="<?= url('assets/images/logo.png') ?>" alt="Crest">
     <span><strong>Word Truth Spirit</strong><small>Patrick E. Pennington</small></span>
+    <img class="header-brand-sprite" src="<?= url('assets/images/spirit-dove.png') ?>" alt="" aria-hidden="true">
   </a>
   <button class="menu-button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
   <nav id="primary-nav" aria-label="Primary navigation">

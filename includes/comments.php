@@ -1,5 +1,147 @@
 <?php
 declare(strict_types=1);
+
 require_once ROOT_PATH . '/config/database.php';
-function ensureCommentsTable(): bool { $db=database();if(!$db)return false;try{$db->exec("CREATE TABLE IF NOT EXISTS wts_blog_comments (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,post_slug VARCHAR(190) NOT NULL,name VARCHAR(120) NOT NULL,email VARCHAR(190) NOT NULL,body TEXT NOT NULL,status ENUM('pending','approved','spam','trash') NOT NULL DEFAULT 'pending',created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX idx_wts_comments_post (post_slug,status,created_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");return true;}catch(PDOException $e){return false;} }
-function approvedComments(string $slug): array {$db=database();if(!$db||!ensureCommentsTable())return [];try{$s=$db->prepare("SELECT name,body,created_at FROM wts_blog_comments WHERE post_slug=? AND status='approved' ORDER BY created_at ASC");$s->execute([$slug]);return $s->fetchAll();}catch(PDOException $e){return [];} }
+
+function ensureCommentsTable(): bool
+{
+    $db = database();
+    if (!$db) return false;
+    try {
+        $db->exec("CREATE TABLE IF NOT EXISTS wts_blog_comments (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            post_slug VARCHAR(190) NOT NULL,
+            parent_id BIGINT UNSIGNED NULL,
+            name VARCHAR(120) NOT NULL,
+            email VARCHAR(190) NOT NULL,
+            body TEXT NOT NULL,
+            status ENUM('pending','approved','spam','trash') NOT NULL DEFAULT 'pending',
+            author_hash CHAR(64) NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            INDEX idx_wts_comments_post (post_slug,status,created_at),
+            INDEX idx_wts_comments_parent (parent_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $columns = $db->query('SHOW COLUMNS FROM wts_blog_comments')->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('parent_id', $columns, true)) $db->exec('ALTER TABLE wts_blog_comments ADD COLUMN parent_id BIGINT UNSIGNED NULL AFTER post_slug, ADD INDEX idx_wts_comments_parent (parent_id)');
+        if (!in_array('author_hash', $columns, true)) $db->exec('ALTER TABLE wts_blog_comments ADD COLUMN author_hash CHAR(64) NULL AFTER status');
+        if (!in_array('updated_at', $columns, true)) $db->exec('ALTER TABLE wts_blog_comments ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL AFTER created_at');
+        $db->exec("CREATE TABLE IF NOT EXISTS wts_comment_reactions (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            comment_id BIGINT UNSIGNED NOT NULL,
+            voter_hash CHAR(64) NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_wts_comment_reaction (comment_id,voter_hash),
+            INDEX idx_wts_comment_reactions_comment (comment_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        return true;
+    } catch (PDOException $exception) {
+        error_log('Comment storage setup failed: ' . $exception->getMessage());
+        return false;
+    }
+}
+
+function commentVisitorHash(): string
+{
+    $address = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+    $agent = (string) ($_SERVER['HTTP_USER_AGENT'] ?? 'unknown');
+    $secret = (string) (getenv('APP_KEY') ?: getenv('DB_NAME') ?: 'word-truth-spirit');
+    return hash_hmac('sha256', $address . '|' . $agent, $secret);
+}
+
+function ensureCommentSession(): void
+{
+    if (session_status() === PHP_SESSION_ACTIVE || headers_sent()) return;
+    session_set_cookie_params(['httponly'=>true, 'samesite'=>'Lax', 'secure'=>(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')]);
+    session_start();
+}
+
+function commentInteractionToken(): string
+{
+    ensureCommentSession();
+    if (empty($_SESSION['wts_comment_token'])) $_SESSION['wts_comment_token'] = bin2hex(random_bytes(24));
+    return (string) $_SESSION['wts_comment_token'];
+}
+
+function verifyCommentInteractionToken(string $token): bool
+{
+    ensureCommentSession();
+    return !empty($_SESSION['wts_comment_token']) && hash_equals((string) $_SESSION['wts_comment_token'], $token);
+}
+
+function approvedComments(string $slug): array
+{
+    $db = database();
+    if (!$db || !ensureCommentsTable()) return [];
+    try {
+        $statement = $db->prepare("SELECT c.id,c.parent_id,c.name,c.body,c.created_at,c.updated_at,COUNT(r.id) AS likes_count,
+            COALESCE(MAX(r.voter_hash=?),0) AS viewer_liked
+            FROM wts_blog_comments c
+            LEFT JOIN wts_comment_reactions r ON r.comment_id=c.id
+            WHERE c.post_slug=? AND c.status='approved'
+            GROUP BY c.id,c.parent_id,c.name,c.body,c.created_at,c.updated_at
+            ORDER BY c.created_at ASC");
+        $statement->execute([commentVisitorHash(), $slug]);
+        return $statement->fetchAll();
+    } catch (PDOException $exception) {
+        return [];
+    }
+}
+
+function threadedComments(array $comments): array
+{
+    $byParent = [];
+    foreach ($comments as $comment) $byParent[(int) ($comment['parent_id'] ?? 0)][] = $comment;
+    $build = function (int $parentId, int $depth = 0) use (&$build, &$byParent): array {
+        $threads = [];
+        foreach ($byParent[$parentId] ?? [] as $comment) {
+            $comment['depth'] = $depth;
+            $comment['replies'] = $depth < 3 ? $build((int) $comment['id'], $depth + 1) : [];
+            $threads[] = $comment;
+        }
+        return $threads;
+    };
+    return $build(0);
+}
+
+function commentParentIsValid(int $parentId, string $slug): bool
+{
+    if ($parentId < 1) return true;
+    $db = database();
+    if (!$db || !ensureCommentsTable()) return false;
+    $statement = $db->prepare("SELECT COUNT(*) FROM wts_blog_comments WHERE id=? AND post_slug=? AND status='approved'");
+    $statement->execute([$parentId, $slug]);
+    return (bool) $statement->fetchColumn();
+}
+
+function commentRateLimited(string $authorHash): bool
+{
+    $db = database();
+    if (!$db || !ensureCommentsTable()) return true;
+    $statement = $db->prepare('SELECT COUNT(*) FROM wts_blog_comments WHERE author_hash=? AND created_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)');
+    $statement->execute([$authorHash]);
+    return (int) $statement->fetchColumn() >= 5;
+}
+
+function commentReactionState(int $commentId): array
+{
+    $db = database();
+    if (!$db || !ensureCommentsTable()) return ['count'=>0, 'liked'=>false];
+    $count = $db->prepare('SELECT COUNT(*) FROM wts_comment_reactions WHERE comment_id=?');
+    $count->execute([$commentId]);
+    $liked = $db->prepare('SELECT COUNT(*) FROM wts_comment_reactions WHERE comment_id=? AND voter_hash=?');
+    $liked->execute([$commentId, commentVisitorHash()]);
+    return ['count'=>(int) $count->fetchColumn(), 'liked'=>(bool) $liked->fetchColumn()];
+}
+
+function commentModerationCounts(): array
+{
+    $counts = ['all'=>0, 'pending'=>0, 'approved'=>0, 'spam'=>0];
+    $db = database();
+    if (!$db || !ensureCommentsTable()) return $counts;
+    foreach ($db->query("SELECT status,COUNT(*) AS total FROM wts_blog_comments WHERE status<>'trash' GROUP BY status")->fetchAll() as $row) {
+        $counts[$row['status']] = (int) $row['total'];
+        $counts['all'] += (int) $row['total'];
+    }
+    return $counts;
+}

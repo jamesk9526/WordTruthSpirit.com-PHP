@@ -6,6 +6,49 @@
     menuButton.setAttribute('aria-expanded', String(open));
   });
 
+  const moderation = document.querySelector('[data-comment-moderation]');
+  if (moderation) {
+    const selectAll = moderation.querySelector('[data-select-comments]');
+    const checkboxes = [...moderation.querySelectorAll('[data-comment-checkbox]')];
+    const selectedCount = moderation.querySelector('[data-selected-comments]');
+    const refreshSelection = () => {
+      const count = checkboxes.filter(input => input.checked).length;
+      selectedCount.textContent = `${count} selected`;
+      if (selectAll) {
+        selectAll.checked = count > 0 && count === checkboxes.length;
+        selectAll.indeterminate = count > 0 && count < checkboxes.length;
+      }
+    };
+    selectAll?.addEventListener('change', () => { checkboxes.forEach(input => { input.checked = selectAll.checked; }); refreshSelection(); });
+    checkboxes.forEach(input => input.addEventListener('change', refreshSelection));
+  }
+
+  const adForm = document.querySelector('[data-ad-editor-form]');
+  const adPreview = document.querySelector('[data-ad-preview]');
+  if (adForm && adPreview) {
+    const field = name => adForm.elements.namedItem(name);
+    const renderAdPreview = () => {
+      adPreview.querySelector('[data-preview-eyebrow]').textContent = field('eyebrow').value || 'Sponsored resource';
+      adPreview.querySelector('[data-preview-badge]').textContent = field('badge').value;
+      adPreview.querySelector('[data-preview-title]').textContent = field('title').value || 'Your ad headline';
+      adPreview.querySelector('[data-preview-body]').textContent = field('body').value || 'Your supporting message will appear here.';
+      adPreview.querySelector('[data-preview-action]').textContent = `${field('action_label').value || 'Learn more'} →`;
+      adPreview.classList.remove('ad-theme-navy','ad-theme-gold','ad-theme-light');
+      adPreview.classList.add(`ad-theme-${field('theme').value}`);
+    };
+    adForm.addEventListener('input', renderAdPreview);
+    adForm.addEventListener('change', renderAdPreview);
+    field('image_upload')?.addEventListener('change', event => {
+      const image = adPreview.querySelector('[data-preview-image]');
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.addEventListener('load', () => { image.src = reader.result; image.hidden = false; });
+      reader.readAsDataURL(file);
+    });
+    renderAdPreview();
+  }
+
   const form = document.querySelector('[data-post-editor]');
   if (!form) {
     const seoForm = document.querySelector('[data-seo-form]');

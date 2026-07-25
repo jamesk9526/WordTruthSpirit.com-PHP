@@ -2,12 +2,17 @@
 declare(strict_types=1);
 require __DIR__ . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/content.php';
+require ROOT_PATH . '/includes/ads.php';
 $homeContent=pageContent('home',['kicker'=>'✦ Word Truth Spirit','heading'=>'Where Scripture and Spirit belong together.','lead'=>'Clear biblical teaching for believers who value the authority of God’s Word and the active ministry of the Holy Spirit.']);$foundationContent=pageContent('foundation',['kicker'=>'✦ Explore the foundation','heading'=>'One faith. Three essential themes.','lead'=>'']);
+$topAds=adsForPlacement('home_top');$sidebarAds=adsForPlacement('home_sidebar');
 $pageTitle = 'Word Truth Spirit | Patrick E. Pennington';
 $activePage = 'home';
 require __DIR__ . '/includes/header.php';
 ?>
-<main>
+<main class="home-page">
+  <?php if($topAds):?><section class="home-top-ad-zone" aria-label="Featured advertising"><header><span>Featured resources</span><small>Sponsored</small></header><div class="home-top-ad-list"><?php foreach($topAds as $ad)renderAdCard($ad,'top');?></div></section><?php endif;?>
+  <div class="home-page-layout <?=$sidebarAds?'has-ad-sidebar':'without-ad-sidebar'?>">
+  <div class="home-primary">
   <section class="home-hero">
     <div class="hero-copy">
       <p class="kicker"><?=e($homeContent['kicker'])?></p>
@@ -23,7 +28,7 @@ require __DIR__ . '/includes/header.php';
     </div>
     <aside class="verse-card">
       <p>A word for the reader</p>
-      <span class="ornament">✦</span>
+      <img class="ornament brand-sprite-dove" src="<?=url('assets/images/spirit-dove.png')?>" alt="" aria-hidden="true">
       <blockquote>“God is a Spirit: and they that worship him must worship him in spirit and in truth.”</blockquote>
       <cite>John 4:24</cite>
     </aside>
@@ -86,5 +91,8 @@ require __DIR__ . '/includes/header.php';
     <div><p class="kicker kicker-light">✦ &nbsp; From the journal</p><h2>Thoughtful teaching for an everyday faith.</h2></div>
     <div><p>Read reflections on Scripture, spiritual formation, truth, and life in the Spirit.</p><a class="button button-light" href="<?= url('blog/') ?>">Browse all reflections →</a></div>
   </section>
+  </div>
+  <?php if($sidebarAds):?><aside class="home-ad-sidebar" aria-label="Sponsored resources"><div class="home-ad-sidebar-sticky"><header><span>Recommended resources</span><small>Sponsored</small></header><?php foreach($sidebarAds as $ad)renderAdCard($ad,'sidebar');?></div></aside><?php endif;?>
+  </div>
 </main>
 <?php require __DIR__ . '/includes/footer.php'; ?>
