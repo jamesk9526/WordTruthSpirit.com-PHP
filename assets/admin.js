@@ -86,6 +86,14 @@ if (chatReply) {
       field('page_slug').value = field('name').value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     });
     field('page_slug')?.addEventListener('input', () => { pageSlugEdited = true; });
+    const archivedField = field('archived');
+    const enabledField = field('enabled');
+    const syncAdState = () => {
+      if (!archivedField || !enabledField) return;
+      enabledField.disabled = archivedField.checked;
+      if (archivedField.checked) enabledField.checked = false;
+    };
+    archivedField?.addEventListener('change', syncAdState);
     const saveDraft = () => {
       clearTimeout(draftTimer);
       draftStatus.textContent = 'Editing…';
@@ -112,7 +120,7 @@ if (chatReply) {
     adForm.addEventListener('input', saveDraft);
     adForm.addEventListener('change', saveDraft);
     adForm.addEventListener('submit', () => { localStorage.removeItem(draftKey); draftStatus.textContent = 'Saving…'; });
-    renderAdPreview();
+    syncAdState(); renderAdPreview();
   }
 
   const adFilters = document.querySelector('[data-ad-filters]');

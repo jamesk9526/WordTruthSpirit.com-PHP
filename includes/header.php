@@ -33,7 +33,7 @@ $socialImage = $socialImage ?? url('assets/images/logo.png');
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260806b') ?>">
   <link rel="stylesheet" href="<?= url('assets/commerce-admin.css?v=20260826a') ?>">
-  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826b') ?>">
+  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826c') ?>">
   <?php if(!empty($structuredData)): ?><script type="application/ld+json"><?=json_encode($structuredData, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?></script><?php endif; ?>
 </head>
 <body>

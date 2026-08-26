@@ -122,7 +122,7 @@ require __DIR__ . '/_header.php';
 <form method="post" enctype="multipart/form-data" class="dedicated-post-editor" data-post-editor data-base-url="<?=e(url())?>">
   <input type="hidden" name="csrf" value="<?= csrfToken() ?>">
   <aside class="editor-app-rail" aria-label="Editor navigation">
-    <a class="editor-rail-brand" href="<?=url('admin/')?>"><img src="<?=url('assets/images/logo.png')?>" alt="Word Truth Spirit"></a>
+    <a class="editor-rail-brand" href="<?=url('admin/')?>"><img src="<?=url('assets/images/spirit-dove.png')?>" alt="Word Truth Spirit"></a>
     <nav><a href="<?=url('admin/')?>" title="Dashboard"><span>▦</span><strong>Dashboard</strong></a><a class="active" href="<?=url('admin/posts.php')?>" title="Blog"><span>▤</span><strong>Blog</strong></a><a href="<?=url('admin/comments.php')?>" title="Comments"><span>◌</span><strong>Comments</strong></a><a href="<?=url('admin/content.php')?>" title="Page content"><span>¶</span><strong>Pages</strong></a><a href="<?=url('admin/products.php')?>" title="Products and giving"><span>◇</span><strong>Products</strong></a><a href="<?=url('admin/settings.php')?>" title="Settings"><span>⚙</span><strong>Settings</strong></a></nav>
     <a class="editor-rail-exit" href="<?=url('admin/posts.php')?>"><span>←</span><strong>Exit editor</strong></a>
   </aside>
