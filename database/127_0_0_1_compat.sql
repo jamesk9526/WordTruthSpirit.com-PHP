@@ -1,6 +1,6 @@
 -- Run this after importing 127_0_0_1.sql.
 -- The original Node-site tables remain unchanged. This adds only the new
--- Publications catalog required by the PHP site.
+-- PHP-native extensions required by the site, including publications and products.
 USE `wts`;
 
 CREATE TABLE IF NOT EXISTS `wts_books` (
@@ -20,6 +20,31 @@ CREATE TABLE IF NOT EXISTS `wts_books` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `slug` (`slug`),
   KEY `idx_wts_books_status_order` (`status`,`display_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `wts_products` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `slug` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `short_description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `image_url` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `badge` varchar(80) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pricing_mode` enum('fixed','contribution') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fixed',
+  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `suggested_amounts` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `minimum_amount` decimal(10,2) NOT NULL DEFAULT '1.00',
+  `maximum_amount` decimal(10,2) DEFAULT NULL,
+  `allow_custom_amount` tinyint(1) NOT NULL DEFAULT '1',
+  `button_label` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Continue with PayPal',
+  `fulfillment_note` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `display_order` smallint unsigned NOT NULL DEFAULT '10',
+  `status` enum('draft','published','archived') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `wts_products_slug` (`slug`),
+  KEY `idx_wts_products_status_order` (`status`,`display_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `wts_tags` (

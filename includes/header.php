@@ -31,6 +31,7 @@ $socialImage = $socialImage ?? url('assets/images/logo.png');
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260806b') ?>">
+  <link rel="stylesheet" href="<?= url('assets/commerce-admin.css?v=20260826a') ?>">
   <?php if(!empty($structuredData)): ?><script type="application/ld+json"><?=json_encode($structuredData, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?></script><?php endif; ?>
 </head>
 <body>
@@ -43,8 +44,8 @@ $socialImage = $socialImage ?? url('assets/images/logo.png');
   </a>
   <button class="menu-button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
   <nav id="primary-nav" aria-label="Primary navigation">
-    <?php foreach (['home'=>'Home','word'=>'Word','truth'=>'Truth','spirit'=>'Spirit','publications'=>'Publications','blog'=>'Blog','commitments'=>'Commitments','contact'=>'Contact'] as $key => $label): ?>
-      <?php $href = $key === 'home' ? url() : ($key === 'blog' ? url('blog/') : url($key . '.php')); ?>
+    <?php foreach (['home'=>'Home','word'=>'Word','truth'=>'Truth','spirit'=>'Spirit','publications'=>'Publications','blog'=>'Blog','shop'=>'Shop & Give','commitments'=>'Commitments','contact'=>'Contact'] as $key => $label): ?>
+      <?php $href = $key === 'home' ? url() : (in_array($key,['blog','shop'],true) ? url($key . '/') : url($key . '.php')); ?>
       <a class="<?= $activePage === $key ? 'active' : '' ?>" href="<?= $href ?>"><?= $label ?></a>
     <?php endforeach; ?>
   </nav>

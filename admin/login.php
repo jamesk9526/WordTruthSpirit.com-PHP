@@ -8,14 +8,23 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
     verifyCsrf(); $email=trim((string)($_POST['email']??'')); $password=(string)($_POST['password']??'');
     if ($db=database()) {
         if (databaseUsesLegacySchema()) {
-            $statement=$db->prepare('SELECT id,username AS name,password_hash FROM users WHERE email=? OR username=? LIMIT 1');
+            $statement=$db->prepare('SELECT id,username AS name,email,password_hash FROM users WHERE email=? OR username=? LIMIT 1');
             $statement->execute([$email,$email]);
         } else {
-            $statement=$db->prepare('SELECT id,name,password_hash FROM wts_admin_users WHERE email=? LIMIT 1');
+            $statement=$db->prepare('SELECT id,name,email,password_hash FROM wts_admin_users WHERE email=? LIMIT 1');
             $statement->execute([$email]);
         }
         $user=$statement->fetch();
-        if($user&&password_verify($password,$user['password_hash'])){session_regenerate_id(true);$_SESSION['wts_admin_id']=$user['id'];$_SESSION['wts_admin_name']=$user['name'];header('Location:'.url('admin/'));exit;}
+        if($user&&password_verify($password,$user['password_hash'])){
+            session_regenerate_id(true);
+            $_SESSION['wts_admin_id']=$user['id'];
+            $_SESSION['wts_admin_name']=$user['name'];
+            $_SESSION['wts_admin_email']=$user['email'];
+            if (in_array('last_login_at', adminUserColumns(), true)) {
+                $db->prepare('UPDATE ' . adminUserTable() . ' SET last_login_at=NOW() WHERE id=?')->execute([$user['id']]);
+            }
+            header('Location:'.url('admin/'));exit;
+        }
     }
     $error='The email or password was not recognized.';
 }

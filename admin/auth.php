@@ -19,6 +19,27 @@ function adminCount(): int
     catch (PDOException $error) { return 0; }
 }
 function adminLoggedIn(): bool { return !empty($_SESSION['wts_admin_id']); }
+function adminUserTable(): string { return databaseUsesLegacySchema() ? 'users' : 'wts_admin_users'; }
+function adminUserColumns(): array
+{
+    static $columns = null;
+    if ($columns !== null) return $columns;
+    $db = database();
+    if (!$db) return $columns = [];
+    try { return $columns = $db->query('SHOW COLUMNS FROM ' . adminUserTable())->fetchAll(PDO::FETCH_COLUMN); }
+    catch (PDOException $exception) { return $columns = []; }
+}
+function adminUsers(): array
+{
+    $db = database();
+    if (!$db) return [];
+    $legacy = databaseUsesLegacySchema();
+    $created = in_array('created_at', adminUserColumns(), true) ? 'created_at' : 'NULL AS created_at';
+    $lastLogin = in_array('last_login_at', adminUserColumns(), true) ? 'last_login_at' : 'NULL AS last_login_at';
+    try {
+        return $db->query('SELECT id,' . ($legacy ? 'username' : 'name') . " AS name,email,{$created},{$lastLogin} FROM " . adminUserTable() . ' ORDER BY name')->fetchAll();
+    } catch (PDOException $exception) { return []; }
+}
 function requireAdmin(): void
 {
     if (!adminLoggedIn()) { header('Location: ' . url('admin/login.php')); exit; }

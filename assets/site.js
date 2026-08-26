@@ -216,3 +216,13 @@ if (subscriberBanner) {
     subscriberBanner.setAttribute('aria-hidden', 'true');
   });
 }
+
+// Selecting a custom contribution field also selects the corresponding option.
+document.querySelectorAll('[data-product-checkout]').forEach(form => {
+  const custom = form.querySelector('input[name="custom_amount"]');
+  if (!custom) return;
+  custom.addEventListener('focus', () => {
+    const other = form.querySelector('input[name="amount_choice"][value="custom"]');
+    if (other) other.checked = true;
+  });
+});

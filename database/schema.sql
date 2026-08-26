@@ -178,6 +178,29 @@ CREATE TABLE IF NOT EXISTS wts_admin_users (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS wts_products (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug VARCHAR(190) NOT NULL UNIQUE,
+  name VARCHAR(255) NOT NULL,
+  short_description VARCHAR(500) NULL,
+  description TEXT NULL,
+  image_url VARCHAR(1000) NULL,
+  badge VARCHAR(80) NULL,
+  pricing_mode ENUM('fixed','contribution') NOT NULL DEFAULT 'fixed',
+  price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  suggested_amounts VARCHAR(255) NULL,
+  minimum_amount DECIMAL(10,2) NOT NULL DEFAULT 1.00,
+  maximum_amount DECIMAL(10,2) NULL,
+  allow_custom_amount TINYINT(1) NOT NULL DEFAULT 1,
+  button_label VARCHAR(120) NOT NULL DEFAULT 'Continue with PayPal',
+  fulfillment_note VARCHAR(500) NULL,
+  display_order SMALLINT UNSIGNED NOT NULL DEFAULT 10,
+  status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_wts_products_status_order (status, display_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO wts_books
   (slug,title,subtitle,description,cover_image,purchase_url,format_details,published_year,display_order,status)
 VALUES

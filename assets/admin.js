@@ -211,3 +211,26 @@ if (chatReply) {
   document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); form.requestSubmit(); } });
   resizeHeadline(); syncOutput(); updateInsights();
 })();
+
+// Product editor pricing controls and helpful automatic slugs.
+(() => {
+  const form = document.querySelector('[data-product-editor]');
+  if (!form) return;
+  const mode = form.querySelector('[data-pricing-mode]');
+  const fixed = form.querySelector('[data-fixed-pricing]');
+  const contribution = form.querySelector('[data-contribution-pricing]');
+  const name = form.querySelector('[data-product-name]');
+  const slug = form.querySelector('[data-product-slug]');
+  let slugEdited = Boolean(slug?.value);
+  const syncPricing = () => {
+    const fixedMode = mode.value === 'fixed';
+    fixed.hidden = !fixedMode;
+    contribution.hidden = fixedMode;
+  };
+  mode.addEventListener('change', syncPricing);
+  slug?.addEventListener('input', () => { slugEdited = true; });
+  name?.addEventListener('input', () => {
+    if (!slugEdited) slug.value = name.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  });
+  syncPricing();
+})();

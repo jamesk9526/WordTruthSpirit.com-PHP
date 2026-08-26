@@ -34,8 +34,27 @@ administrator. After that, sign in to:
 - Moderate reader discussion with threaded replies, reactions, reports, spam
   screening, blocked commenters, bulk actions, and public administrator replies
 - See publication, journal, and unread-message totals
+- Manage administrator profiles, passwords, and additional admin accounts
+- Create fixed-price products and giving opportunities with suggested or custom amounts
 
 Admin passwords are stored using PHP's current `PASSWORD_DEFAULT` hash.
+
+## Products, giving, and PayPal
+
+Run the built-in database updates, then use **Products & giving** to create
+catalog items. Fixed-price items use a single catalog price. Contribution items
+can offer suggested amounts, an optional custom amount, and minimum/maximum
+bounds. Published items appear under `/shop/`.
+
+Set the PayPal merchant email and currency in **Promotions & SMTP → PayPal
+checkout**. The merchant email is required for fixed-price products. The existing
+hosted donation button can remain as a fallback for contribution items. Amounts
+are validated from the product record on the server before checkout hands off to
+PayPal; this application never receives card or PayPal sign-in details.
+
+The return page confirms only that the visitor returned from PayPal. Automated
+fulfillment or revenue reporting requires a future verified PayPal webhook and
+order ledger.
 
 ## Promotions, email, and subscriptions
 

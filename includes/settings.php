@@ -43,7 +43,7 @@ function setAppSetting(string $key, string $value): bool
 {
     $db = database(); if (!$db) return false;
     try {
-        $table = databaseUsesLegacySchema() ? 'app_settings' : 'wts_settings';
+        $table = databaseUsesLegacySchema() && databaseTableExists('app_settings') ? 'app_settings' : 'wts_settings';
         if (!databaseTableExists($table)) return false;
         $statement = $db->prepare("INSERT INTO {$table} (setting_key,setting_value) VALUES (?,?) ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value),updated_at=CURRENT_TIMESTAMP");
         return $statement->execute([$key,$value]);
