@@ -16,6 +16,7 @@ if (!$dedicatedAdminEditor && adminLoggedIn()) {
   <title><?= e($adminTitle) ?> | WTS Admin</title>
   <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260826a') ?>">
   <link rel="stylesheet" href="<?= url('assets/commerce-admin.css?v=20260826a') ?>">
+  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826b') ?>">
 </head>
 <body class="admin-body<?= $dedicatedAdminEditor ? ' editor-workspace-body' : '' ?>">
 <?php if (adminLoggedIn() && !$dedicatedAdminEditor): ?>

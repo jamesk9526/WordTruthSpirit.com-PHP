@@ -83,6 +83,15 @@
     button?.addEventListener('click', () => enableNotifications(button));
   });
 
+  if (Notification.permission === 'denied') {
+    controls.forEach(control => {
+      const button = control.querySelector('[data-push-enable]');
+      if (button) { button.textContent = 'Alerts blocked'; button.disabled = true; }
+    });
+    setStatus('Alerts are blocked for this site. You can re-enable them in your browser settings.');
+    return;
+  }
+
   if (Notification.permission === 'granted') {
     navigator.serviceWorker.getRegistration(serviceWorkerUrl).then(async registration => {
       if (registration && await registration.pushManager.getSubscription()) showEnabled();

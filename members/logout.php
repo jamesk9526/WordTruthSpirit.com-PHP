@@ -1,0 +1,1 @@
+<?php declare(strict_types=1); require dirname(__DIR__).'/includes/bootstrap.php'; require ROOT_PATH.'/includes/members.php';memberSession();unset($_SESSION['wts_member_id']);header('Location:'.url());exit;

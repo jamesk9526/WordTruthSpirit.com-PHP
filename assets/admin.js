@@ -49,6 +49,19 @@ if (chatReply) {
   const adPreview = document.querySelector('[data-ad-preview]');
   if (adForm && adPreview) {
     const field = name => adForm.elements.namedItem(name);
+    const draftKey = `wts-ad-draft:${adForm.dataset.adDraftKey}`;
+    const draftStatus = document.querySelector('[data-ad-draft-status]');
+    let draftTimer;
+    let pageSlugEdited = Boolean(field('page_slug')?.value);
+    const previewImage = adPreview.querySelector('[data-preview-image]');
+    const previewImagePath = value => {
+      const path = value.trim();
+      if (!path) { previewImage.hidden = true; return; }
+      if (/^https:\/\//i.test(path)) previewImage.src = path;
+      else if (/^assets\/[a-z0-9_./-]+$/i.test(path)) previewImage.src = `${adForm.dataset.baseUrl || '/'}${path}`;
+      else { previewImage.hidden = true; return; }
+      previewImage.hidden = false;
+    };
     const renderAdPreview = () => {
       adPreview.querySelector('[data-preview-eyebrow]').textContent = field('eyebrow').value || 'Sponsored resource';
       adPreview.querySelector('[data-preview-badge]').textContent = field('badge').value;
@@ -57,18 +70,68 @@ if (chatReply) {
       adPreview.querySelector('[data-preview-action]').textContent = `${field('action_label').value || 'Learn more'} →`;
       adPreview.classList.remove('ad-theme-navy','ad-theme-gold','ad-theme-light');
       adPreview.classList.add(`ad-theme-${field('theme').value}`);
+      previewImagePath(field('image').value);
     };
     adForm.addEventListener('input', renderAdPreview);
     adForm.addEventListener('change', renderAdPreview);
     field('image_upload')?.addEventListener('change', event => {
-      const image = adPreview.querySelector('[data-preview-image]');
       const file = event.target.files?.[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.addEventListener('load', () => { image.src = reader.result; image.hidden = false; });
+      reader.addEventListener('load', () => { previewImage.src = reader.result; previewImage.hidden = false; });
       reader.readAsDataURL(file);
     });
+    field('name')?.addEventListener('input', () => {
+      if (pageSlugEdited || field('page_slug').value.trim()) return;
+      field('page_slug').value = field('name').value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    });
+    field('page_slug')?.addEventListener('input', () => { pageSlugEdited = true; });
+    const saveDraft = () => {
+      clearTimeout(draftTimer);
+      draftStatus.textContent = 'Editing…';
+      draftTimer = setTimeout(() => {
+        const values = {};
+        [...adForm.elements].forEach(input => {
+          if (!input.name || ['csrf', 'action', 'image_upload'].includes(input.name)) return;
+          values[input.name] = input.type === 'checkbox' ? input.checked : input.value;
+        });
+        localStorage.setItem(draftKey, JSON.stringify({ values, savedAt: Date.now() }));
+        draftStatus.textContent = 'Recovery draft saved locally';
+      }, 450);
+    };
+    if (adForm.dataset.adDraftKey === 'new') try {
+      const saved = JSON.parse(localStorage.getItem(draftKey) || 'null');
+      if (saved?.values && confirm('Restore the locally saved ad draft?')) {
+        Object.entries(saved.values).forEach(([name, value]) => {
+          const input = field(name); if (!input) return;
+          if (input.type === 'checkbox') input.checked = Boolean(value); else input.value = value;
+        });
+        draftStatus.textContent = 'Recovery draft restored';
+      }
+    } catch (_) { localStorage.removeItem(draftKey); }
+    adForm.addEventListener('input', saveDraft);
+    adForm.addEventListener('change', saveDraft);
+    adForm.addEventListener('submit', () => { localStorage.removeItem(draftKey); draftStatus.textContent = 'Saving…'; });
     renderAdPreview();
+  }
+
+  const adFilters = document.querySelector('[data-ad-filters]');
+  if (adFilters) {
+    const rows = [...document.querySelectorAll('[data-ad-row]')];
+    const search = adFilters.querySelector('[data-ad-search]');
+    const placement = adFilters.querySelector('[data-ad-placement]');
+    const status = adFilters.querySelector('[data-ad-status]');
+    const empty = document.querySelector('[data-ad-filter-empty]');
+    const filterAds = () => {
+      const query = search.value.trim().toLowerCase(); let visible = 0;
+      rows.forEach(row => {
+        const matches = (!query || row.dataset.adSearch.includes(query)) && (!placement.value || row.dataset.adPlacement === placement.value) && (!status.value || row.dataset.adStatus === status.value);
+        row.hidden = !matches; if (matches) visible += 1;
+      });
+      empty.hidden = visible !== 0;
+    };
+    [search, placement, status].forEach(input => input.addEventListener('input', filterAds));
+    filterAds();
   }
 
   const form = document.querySelector('[data-post-editor]');
