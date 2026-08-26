@@ -4,6 +4,7 @@ declare(strict_types=1);
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/comments.php';
 require ROOT_PATH . '/includes/posts.php';
+require ROOT_PATH . '/includes/members.php';
 
 $slug = trim((string) ($_POST['slug'] ?? ''));
 $name = trim((string) ($_POST['name'] ?? ''));
@@ -41,8 +42,10 @@ if (ensureCommentsTable()) {
         $duplicate->execute([$slug, $authorHash, $body]);
         if ($duplicate->fetchColumn()) $return('duplicate');
         $status = commentLooksLikeSpam($name, $body) ? 'spam' : 'pending';
-        database()->prepare('INSERT INTO wts_blog_comments (post_slug,parent_id,name,email,body,status,author_hash) VALUES (?,?,?,?,?,?,?)')
-            ->execute([$slug, $parentId ?: null, $name, $email, $body, $status, $authorHash]);
+        $member = currentMember();
+        if ($member) { $name=(string)$member['display_name']; $email=(string)$member['email']; }
+        if (databaseTableExists('wts_members')) database()->prepare('INSERT INTO wts_blog_comments (post_slug,parent_id,member_id,name,email,body,status,author_hash) VALUES (?,?,?,?,?,?,?,?)')->execute([$slug, $parentId ?: null, $member ? (int)$member['id'] : null, $name, $email, $body, $status, $authorHash]);
+        else database()->prepare('INSERT INTO wts_blog_comments (post_slug,parent_id,name,email,body,status,author_hash) VALUES (?,?,?,?,?,?,?)')->execute([$slug, $parentId ?: null, $name, $email, $body, $status, $authorHash]);
         $return($status === 'spam' ? 'pending' : ($parentId ? 'reply-pending' : 'pending'));
     } catch (PDOException $exception) {
         error_log('Comment submission failed: ' . $exception->getMessage());

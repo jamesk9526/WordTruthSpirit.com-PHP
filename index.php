@@ -47,7 +47,6 @@ require __DIR__ . '/includes/header.php';
   </section>
 
   <section class="author-section">
-    <div class="author-mark"><span>PEP</span><small>Author</small></div>
     <div class="author-copy">
       <p class="kicker">✦ &nbsp; From the author</p>
       <h2>Patrick E. Pennington</h2>
@@ -58,6 +57,10 @@ require __DIR__ . '/includes/header.php';
         <a class="button-link" href="<?= url('contact.php') ?>">Contact the author →</a>
       </div>
     </div>
+    <aside class="author-principles" aria-label="Ministry focus">
+      <span>Word</span><span>Truth</span><span>Spirit</span>
+      <p>Scripture-rooted teaching for a faithful life with Christ.</p>
+    </aside>
   </section>
 
   <section class="book-section">

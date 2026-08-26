@@ -98,12 +98,18 @@ function adStatusLabel(array $ad): string
 
 function adAssetUrl(string $asset): string
 {
-    return preg_match('#^https?://#i',$asset) ? $asset : url($asset);
+    $asset = trim($asset);
+    if (preg_match('#^https://#i', $asset)) return $asset;
+    if (preg_match('#^assets/[a-z0-9_./-]+$#i', $asset)) return url($asset);
+    return '';
 }
 
 function adDestinationUrl(string $destination): string
 {
-    return preg_match('#^https?://#i',$destination) ? $destination : url($destination);
+    $destination = trim($destination);
+    if (preg_match('#^https?://#i', $destination)) return $destination;
+    if (str_starts_with($destination, '/')) return url($destination);
+    return url();
 }
 
 function adPageUrl(array $ad): string
@@ -124,7 +130,7 @@ function renderAdCard(array $ad,string $variant='journal'): void
     $artTarget=empty($ad['pageEnabled'])?$target:'';$artRel=empty($ad['pageEnabled'])?$rel:'';
     ?>
     <article class="ad-card ad-card-<?=e($variant)?> ad-theme-<?=e((string)($ad['theme']??'navy'))?>">
-      <?php if(!empty($ad['image'])):?><a class="ad-card-art" href="<?=e(!empty($ad['pageEnabled'])?adPageUrl($ad):adDestinationUrl((string)$ad['actionUrl']))?>"<?=$artTarget?><?=$artRel?>><img src="<?=e(adAssetUrl((string)$ad['image']))?>" alt="<?=e((string)($ad['imageAlt']??''))?>"></a><?php endif;?>
+      <?php if($image=adAssetUrl((string)($ad['image']??''))):?><a class="ad-card-art" href="<?=e(!empty($ad['pageEnabled'])?adPageUrl($ad):adDestinationUrl((string)$ad['actionUrl']))?>"<?=$artTarget?><?=$artRel?>><img src="<?=e($image)?>" alt="<?=e((string)($ad['imageAlt']??''))?>"></a><?php endif;?>
       <div class="ad-card-copy"><div class="ad-card-meta"><span><?=e((string)($ad['eyebrow']??'Sponsored'))?></span><?php if(!empty($ad['sponsor'])):?><small>From <?=e((string)$ad['sponsor'])?></small><?php endif;?></div><?php if(!empty($ad['badge'])):?><strong class="ad-card-badge"><?=e((string)$ad['badge'])?></strong><?php endif;?><h2><?=e((string)$ad['title'])?></h2><?php if(!empty($ad['body'])):?><p><?=e((string)$ad['body'])?></p><?php endif;?></div>
       <div class="ad-card-actions"><?php if(!empty($ad['pageEnabled'])):?><a class="home-ad-details" href="<?=e(adPageUrl($ad))?>">View details</a><?php endif;?><a class="button button-primary" href="<?=e(adDestinationUrl((string)$ad['actionUrl']))?>"<?=$target?><?=$rel?>><?=e((string)$ad['actionLabel'])?> →</a></div>
     </article>

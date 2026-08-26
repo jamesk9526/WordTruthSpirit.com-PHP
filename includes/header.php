@@ -3,6 +3,7 @@ require_once ROOT_PATH . '/includes/settings.php';
 require_once ROOT_PATH . '/includes/push.php';
 require_once ROOT_PATH . '/includes/analytics.php';
 require_once ROOT_PATH . '/includes/seo.php';
+require_once ROOT_PATH . '/includes/members.php';
 recordPublicPageView();
 $experience = siteExperience();
 $activePage = $activePage ?? '';
@@ -32,6 +33,7 @@ $socialImage = $socialImage ?? url('assets/images/logo.png');
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260806b') ?>">
   <link rel="stylesheet" href="<?= url('assets/commerce-admin.css?v=20260826a') ?>">
+  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826b') ?>">
   <?php if(!empty($structuredData)): ?><script type="application/ld+json"><?=json_encode($structuredData, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?></script><?php endif; ?>
 </head>
 <body>
@@ -49,6 +51,7 @@ $socialImage = $socialImage ?? url('assets/images/logo.png');
       <a class="<?= $activePage === $key ? 'active' : '' ?>" href="<?= $href ?>"><?= $label ?></a>
     <?php endforeach; ?>
   </nav>
+  <a class="site-account-link" href="<?=url(memberLoggedIn()?'members/':'members/login.php')?>"><?=memberLoggedIn()?'My account':'Sign in'?></a>
 </header>
 <?php if (!empty($experience['announcement']['enabled'])): ?><aside class="announcement" data-announcement>
   <p><?= e($experience['announcement']['message']) ?></p><a href="<?= e($experience['announcement']['actionUrl']) ?>" rel="noopener"><?= e($experience['announcement']['actionLabel']) ?></a><button type="button" aria-label="Dismiss announcement">×</button>

@@ -17,9 +17,9 @@ function subscriptionStatus(): string
 function subscriptionStatusMessage(): string
 {
     return match (subscriptionStatus()) {
-        'pending' => 'Almost there — check your inbox and confirm your email address.',
+        'pending' => 'Check your inbox to confirm your email address. We will not send updates until you do.',
         'active' => 'You’re already subscribed. Thank you for staying connected.',
-        'mail-error' => 'Your request was saved, but the confirmation email could not be sent. Please try again later.',
+        'mail-error' => 'Your request was saved, but we could not send the confirmation email. Please try again later.',
         'error' => 'Please enter a valid email address.',
         default => '',
     };

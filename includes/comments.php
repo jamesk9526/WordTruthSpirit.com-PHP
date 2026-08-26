@@ -95,12 +95,16 @@ function approvedComments(string $slug): array
     $db = database();
     if (!$db || !ensureCommentsTable()) return [];
     try {
-        $statement = $db->prepare("SELECT c.id,c.parent_id,c.name,c.body,c.created_at,c.updated_at,COUNT(r.id) AS likes_count,
+        $memberJoin=databaseTableExists('wts_members') ? ' LEFT JOIN wts_members m ON m.id=c.member_id AND m.email_confirmed_at IS NOT NULL ' : '';
+        $memberSelect=databaseTableExists('wts_members') ? ',m.profile_slug' : ',NULL AS profile_slug';
+        $memberGroup=databaseTableExists('wts_members') ? ',m.profile_slug' : '';
+        $statement = $db->prepare("SELECT c.id,c.parent_id,c.name,c.body,c.created_at,c.updated_at{$memberSelect},COUNT(r.id) AS likes_count,
             COALESCE(MAX(r.voter_hash=?),0) AS viewer_liked
             FROM wts_blog_comments c
+            {$memberJoin}
             LEFT JOIN wts_comment_reactions r ON r.comment_id=c.id
             WHERE c.post_slug=? AND c.status='approved'
-            GROUP BY c.id,c.parent_id,c.name,c.body,c.created_at,c.updated_at
+            GROUP BY c.id,c.parent_id,c.name,c.body,c.created_at,c.updated_at{$memberGroup}
             ORDER BY c.created_at ASC");
         $statement->execute([commentVisitorHash(), $slug]);
         return $statement->fetchAll();

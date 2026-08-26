@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/includes/bootstrap.php';
 require ROOT_PATH . '/includes/products.php';
+require ROOT_PATH . '/includes/members.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location:' . url('shop/')); exit; }
 $product = productBySlug(trim((string)($_POST['slug']??'')));
@@ -15,7 +16,9 @@ try {
         ? (($_POST['amount_choice']??'')==='custom' ? ($_POST['custom_amount']??'') : ($_POST['amount_choice']??''))
         : null;
     $amount = validateProductAmount($product, $submitted);
+    if (memberLoggedIn() && ($member=currentMember())) $purchaseReference=recordPurchaseIntent((int)$member['id'],$product,$amount);
     $checkout = paypalCheckoutFields($product, $amount);
+    if (!empty($purchaseReference)) $checkout['fields']['custom'] = $purchaseReference;
 } catch (Throwable $exception) { $error=$exception->getMessage(); }
 $pageTitle=$error?'Checkout needs attention | Word Truth Spirit':'Continue to PayPal | Word Truth Spirit';
 $pageDescription='Secure PayPal checkout handoff.'; $activePage='shop'; require ROOT_PATH.'/includes/header.php';
