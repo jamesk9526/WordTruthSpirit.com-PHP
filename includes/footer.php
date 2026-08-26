@@ -13,6 +13,7 @@
   <div><h3>Connect</h3><?php if($subscription['enabled']&&$subscription['placements']['footer']):?><p><?=e($subscription['body'])?></p><?php renderSubscriptionForm('footer','footer','email-signup-footer'); ?><?php else:?><p>Follow for updates on biblical teachings and resources.</p><?php endif;?><a class="footer-button" href="<?= url('contact.php') ?>">Contact Us</a><a class="footer-button" href="<?= url('donate/') ?>">Support the ministry</a></div>
   <small>© <?= date('Y') ?> Patrick E. Pennington. All rights reserved.</small>
 </footer>
-<script src="<?= url('assets/site.js?v=20260724b') ?>"></script>
+<script src="<?= url('assets/site.js?v=20260806a') ?>"></script>
+<?php if (pushNotificationsConfigured()): ?><script src="<?= url('assets/push.js?v=20260815a') ?>" data-push-public-key="<?= e(pushPublicKey()) ?>" data-push-subscribe-url="<?= url('api/push-subscribe.php') ?>" data-push-service-worker="<?= url('push-service-worker.js') ?>"></script><?php endif; ?>
 </body>
 </html>

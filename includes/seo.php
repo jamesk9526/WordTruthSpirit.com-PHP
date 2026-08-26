@@ -18,3 +18,16 @@ function seoPage(string $key): array
     $db = database(); if (!$db || !ensureSeoTable()) return [];
     try { $statement=$db->prepare('SELECT * FROM wts_seo_pages WHERE page_key=?'); $statement->execute([$key]); return $statement->fetch() ?: []; } catch (PDOException $exception) { return []; }
 }
+
+function seoAbsoluteUrl(string $path = ''): string
+{
+    $configured = rtrim((string) (getenv('APP_URL') ?: ''), '/');
+    if ($configured !== '') {
+        $relative = url($path);
+        if (BASE_PATH !== '' && str_ends_with($configured, BASE_PATH) && str_starts_with($relative, BASE_PATH)) $relative = substr($relative, strlen(BASE_PATH));
+        return $configured . $relative;
+    }
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = preg_replace('/[^a-z0-9.:-]/i', '', (string) ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+    return $scheme . '://' . $host . url($path);
+}

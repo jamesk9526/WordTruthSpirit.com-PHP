@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_PATH . '/includes/settings.php';
+require_once ROOT_PATH . '/includes/push.php';
 require_once ROOT_PATH . '/includes/analytics.php';
 require_once ROOT_PATH . '/includes/seo.php';
 recordPublicPageView();
@@ -9,6 +10,9 @@ $pageTitle = $pageTitle ?? 'Word Truth Spirit';
 $seoOverride = seoPage(seoPageKey());
 if (!empty($seoOverride['meta_title'])) $pageTitle = $seoOverride['meta_title'];
 if (!empty($seoOverride['meta_description'])) $pageDescription = $seoOverride['meta_description'];
+$canonicalPath = $canonicalPath ?? ltrim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
+$canonicalUrl = seoAbsoluteUrl($canonicalPath);
+$socialImage = $socialImage ?? url('assets/images/logo.png');
 ?>
 <!doctype html>
 <html lang="en">
@@ -16,12 +20,18 @@ if (!empty($seoOverride['meta_description'])) $pageDescription = $seoOverride['m
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="<?= e($pageDescription ?? 'Biblical teaching where Scripture and Spirit belong together.') ?>">
+  <link rel="canonical" href="<?=e($canonicalUrl)?>">
+  <meta property="og:type" content="<?=e($openGraphType ?? 'website')?>">
+  <meta property="og:site_name" content="Word Truth Spirit">
+  <meta property="og:title" content="<?= e($pageTitle) ?>"><meta property="og:description" content="<?= e($pageDescription ?? '') ?>"><meta property="og:url" content="<?= e($canonicalUrl) ?>"><meta property="og:image" content="<?= e(preg_match('#^https?://#i', $socialImage) ? $socialImage : seoAbsoluteUrl($socialImage)) ?>">
+  <meta name="twitter:card" content="summary_large_image">
   <?php if($gscVerification=appSetting('seo.googleVerification','')):?><meta name="google-site-verification" content="<?=e($gscVerification)?>"><?php endif;?>
   <title><?= e($pageTitle) ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260724f') ?>">
+  <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260806b') ?>">
+  <?php if(!empty($structuredData)): ?><script type="application/ld+json"><?=json_encode($structuredData, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)?></script><?php endif; ?>
 </head>
 <body>
 <a class="skip-link" href="#content">Skip to content</a>

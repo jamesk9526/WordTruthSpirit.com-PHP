@@ -10,9 +10,11 @@ CREATE TABLE IF NOT EXISTS wts_posts (
   author VARCHAR(120) NOT NULL DEFAULT 'Patrick E. Pennington',
   tags TEXT NULL,
   cover_image VARCHAR(2048) NULL,
+  audio_url VARCHAR(2048) NULL,
   meta_title VARCHAR(500) NULL,
   meta_description TEXT NULL,
   featured TINYINT(1) NOT NULL DEFAULT 0,
+  comments_enabled TINYINT(1) NOT NULL DEFAULT 1,
   reading_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 5,
   status ENUM('draft','published','archived') NOT NULL DEFAULT 'draft',
   published_at DATETIME NULL,
@@ -49,6 +51,19 @@ CREATE TABLE IF NOT EXISTS wts_page_views (
   INDEX idx_wts_views_path_day (page_path(190), viewed_on)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS wts_post_engagement (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  viewed_on DATE NOT NULL,
+  visitor_hash CHAR(64) NOT NULL,
+  post_slug VARCHAR(190) NOT NULL,
+  max_scroll TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  active_seconds SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  completed TINYINT(1) NOT NULL DEFAULT 0,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_wts_post_engagement_day (viewed_on, visitor_hash, post_slug),
+  INDEX idx_wts_post_engagement_slug_day (post_slug, viewed_on)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS wts_contact_messages (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -77,6 +92,18 @@ CREATE TABLE IF NOT EXISTS wts_settings (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS wts_push_subscriptions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  endpoint TEXT NOT NULL,
+  endpoint_hash CHAR(64) NOT NULL UNIQUE,
+  p256dh VARCHAR(255) NOT NULL,
+  auth VARCHAR(255) NOT NULL,
+  user_agent VARCHAR(500) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_wts_push_updated (updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS wts_blog_comments (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   post_slug VARCHAR(190) NOT NULL,
@@ -99,6 +126,29 @@ CREATE TABLE IF NOT EXISTS wts_comment_reactions (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_wts_comment_reaction (comment_id,voter_hash),
   INDEX idx_wts_comment_reactions_comment (comment_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_comment_reports (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  comment_id BIGINT UNSIGNED NOT NULL,
+  reporter_hash CHAR(64) NOT NULL,
+  reason VARCHAR(40) NOT NULL DEFAULT 'other',
+  details VARCHAR(500) NULL,
+  status ENUM('open','reviewed','dismissed') NOT NULL DEFAULT 'open',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_wts_comment_reporter (comment_id,reporter_hash),
+  INDEX idx_wts_comment_reports_status (status,created_at),
+  INDEX idx_wts_comment_reports_comment (comment_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS wts_blocked_commenters (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email_hash CHAR(64) NULL,
+  author_hash CHAR(64) NULL,
+  reason VARCHAR(255) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_wts_blocked_email (email_hash),
+  UNIQUE KEY uq_wts_blocked_author (author_hash)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS wts_books (

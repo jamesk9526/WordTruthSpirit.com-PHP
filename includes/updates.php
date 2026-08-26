@@ -13,7 +13,15 @@ function writerMetadataColumns(PDO $db): void
 {
     if (databaseUsesLegacySchema() || !databaseTableExists('wts_posts')) return;
     $columns = $db->query('SHOW COLUMNS FROM wts_posts')->fetchAll(PDO::FETCH_COLUMN);
-    foreach (['tags'=>'TEXT NULL','cover_image'=>'VARCHAR(2048) NULL','meta_title'=>'VARCHAR(500) NULL','meta_description'=>'TEXT NULL','featured'=>'TINYINT(1) NOT NULL DEFAULT 0'] as $name=>$definition) if (!in_array($name,$columns,true)) $db->exec("ALTER TABLE wts_posts ADD COLUMN {$name} {$definition}");
+    foreach (['tags'=>'TEXT NULL','cover_image'=>'VARCHAR(2048) NULL','audio_url'=>'VARCHAR(2048) NULL','meta_title'=>'VARCHAR(500) NULL','meta_description'=>'TEXT NULL','featured'=>'TINYINT(1) NOT NULL DEFAULT 0'] as $name=>$definition) if (!in_array($name,$columns,true)) $db->exec("ALTER TABLE wts_posts ADD COLUMN {$name} {$definition}");
+}
+
+function reflectionAudioColumn(PDO $db): void
+{
+    $table = databaseUsesLegacySchema() ? 'posts' : 'wts_posts';
+    if (!databaseTableExists($table)) return;
+    $columns = $db->query("SHOW COLUMNS FROM {$table}")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('audio_url', $columns, true)) $db->exec("ALTER TABLE {$table} ADD COLUMN audio_url VARCHAR(2048) NULL");
 }
 
 function subscriberSourceColumn(PDO $db): void
@@ -38,11 +46,13 @@ function databaseUpdates(): array
     return [
       '2026-07-site-settings'=>['Site settings storage','Creates the PHP-native settings table used by promotions, email signup controls, and custom ads.', fn(PDO $db)=>$db->exec("CREATE TABLE IF NOT EXISTS wts_settings (setting_key VARCHAR(190) PRIMARY KEY,setting_value LONGTEXT NULL,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")],
       '2026-07-writer-metadata'=>['Writer metadata','Adds tags, cover images, SEO fields, and featured status to the PHP-native posts table.', fn(PDO $db)=>writerMetadataColumns($db)],
-      '2026-07-custom-tags'=>['Custom tags','Creates the reusable tag library used by the journal editor.', fn(PDO $db)=>$db->exec("CREATE TABLE IF NOT EXISTS wts_tags (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,name VARCHAR(80) NOT NULL UNIQUE,slug VARCHAR(100) NOT NULL UNIQUE,description VARCHAR(255) NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")],
+      '2026-07-custom-tags'=>['Custom tags','Creates the reusable tag library used by the blog editor.', fn(PDO $db)=>$db->exec("CREATE TABLE IF NOT EXISTS wts_tags (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,name VARCHAR(80) NOT NULL UNIQUE,slug VARCHAR(100) NOT NULL UNIQUE,description VARCHAR(255) NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")],
       '2026-07-seo-studio'=>['SEO studio','Creates storage for SEO titles, descriptions, and focus keywords for public pages.', fn(PDO $db)=>$db->exec("CREATE TABLE IF NOT EXISTS wts_seo_pages (page_key VARCHAR(80) PRIMARY KEY,meta_title VARCHAR(500) NULL,meta_description TEXT NULL,focus_keyword VARCHAR(160) NULL,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")],
       '2026-07-first-party-analytics'=>['First-party analytics','Creates the privacy-conscious page-view table. It stores no IP addresses.', fn(PDO $db)=>$db->exec("CREATE TABLE IF NOT EXISTS wts_page_views (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,viewed_on DATE NOT NULL,visitor_hash CHAR(64) NOT NULL,page_path VARCHAR(500) NOT NULL,referrer_host VARCHAR(190) NULL,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,INDEX idx_wts_views_day (viewed_on),INDEX idx_wts_views_path_day (page_path(190),viewed_on)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")],
       '2026-07-subscriber-sources'=>['Subscriber signup sources','Records which signup placement each subscriber used on the PHP-native subscriber table.', fn(PDO $db)=>subscriberSourceColumn($db)],
-      '2026-07-threaded-comments'=>['Threaded comments and likes','Adds reader replies, anonymous likes, moderation metadata, and rate-limit support to journal comments.', fn(PDO $db)=>threadedCommentUpgrade($db)],
+      '2026-07-threaded-comments'=>['Threaded comments and likes','Adds reader replies, anonymous likes, moderation metadata, and rate-limit support to blog comments.', fn(PDO $db)=>threadedCommentUpgrade($db)],
+      '2026-08-reflection-audio'=>['Reflection audio','Adds an optional narrated audio URL to each reflection.', fn(PDO $db)=>reflectionAudioColumn($db)],
+      '2026-08-reader-engagement'=>['Reader engagement analytics','Tracks aggregate scroll depth and completion for reflections without storing IP addresses.', fn(PDO $db)=>$db->exec("CREATE TABLE IF NOT EXISTS wts_post_engagement (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,viewed_on DATE NOT NULL,visitor_hash CHAR(64) NOT NULL,post_slug VARCHAR(190) NOT NULL,max_scroll TINYINT UNSIGNED NOT NULL DEFAULT 0,active_seconds SMALLINT UNSIGNED NOT NULL DEFAULT 0,completed TINYINT(1) NOT NULL DEFAULT 0,updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,UNIQUE KEY uq_wts_post_engagement_day (viewed_on,visitor_hash,post_slug),INDEX idx_wts_post_engagement_slug_day (post_slug,viewed_on)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci")],
     ];
 }
 

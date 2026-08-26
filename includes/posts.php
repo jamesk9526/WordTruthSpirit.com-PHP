@@ -6,8 +6,8 @@ require_once ROOT_PATH . '/includes/tags.php';
 function seedPosts(): array
 {
     return [
-      ['slug'=>'browser-push-now-available','title'=>'Browser push now available!','category'=>'general','published_at'=>'2026-07-15','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'Stay connected with a short browser alert whenever a new reflection is published.','body'=>'Browser notifications are now available for the Word Truth Spirit journal. This quiet, optional update helps readers know when a new reflection is ready without adding more noise to the inbox.'],
-      ['slug'=>'new-email-subscription-for-blogs','title'=>'New email subscription for blogs!','category'=>'general','published_at'=>'2026-07-14','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'A simple new way to receive the latest Word Truth Spirit reflections.','body'=>'Readers may now subscribe for email updates when new journal entries are published. We will only write when there is something new to read.'],
+      ['slug'=>'browser-push-now-available','title'=>'Browser push now available!','category'=>'general','published_at'=>'2026-07-15','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'Stay connected with a short browser alert whenever a new reflection is published.','body'=>'Browser notifications are now available for the Word Truth Spirit blog. This quiet, optional update helps readers know when a new reflection is ready without adding more noise to the inbox.'],
+      ['slug'=>'new-email-subscription-for-blogs','title'=>'New email subscription for blogs!','category'=>'general','published_at'=>'2026-07-14','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'A simple new way to receive the latest Word Truth Spirit reflections.','body'=>'Readers may now subscribe for email updates when new blog entries are published. We will only write when there is something new to read.'],
       ['slug'=>'large-print-version-of-the-spirit-of-truth-coming-soon','title'=>'Large Print version of The Spirit of Truth coming soon!','category'=>'general','published_at'=>'2026-07-11','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'A more readable edition of The Spirit of Truth is being prepared.','body'=>'A large-print edition is being prepared for readers who prefer a more comfortable page and type size.'],
       ['slug'=>'celebrate-250','title'=>'Celebrate 250!','category'=>'general','published_at'=>'2026-07-08','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'A special Independence Day offer on the ebook edition of The Spirit of Truth.','body'=>'For a limited time, the ebook edition of The Spirit of Truth is available for $2.50 as we celebrate America’s 250th anniversary.'],
       ['slug'=>'biblememorycom-promo','title'=>'BibleMemory.com Promo','category'=>'general','published_at'=>'2026-06-27','reading_minutes'=>5,'author'=>'Patrick E. Pennington','excerpt'=>'Build a lasting habit of Scripture memory and save 20 percent.','body'=>'Word Truth Spirit readers can save 20 percent on Bible Memory Unlimited through our partner link.'],
@@ -32,9 +32,9 @@ function allPosts(): array
         try {
             ensureWriterPostColumns();
             if (databaseUsesLegacySchema()) {
-                $rows = $db->query("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body,tags,cover_image,meta_title,meta_description,featured FROM posts WHERE published=1 ORDER BY featured DESC,date DESC")->fetchAll();
+                $rows = $db->query("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body,tags,cover_image,audio_url,meta_title,meta_description,featured,comments_enabled FROM posts WHERE published=1 ORDER BY featured DESC,date DESC")->fetchAll();
             } else {
-                $rows = $db->query("SELECT slug,title,category,published_at,reading_minutes,author,excerpt,body,tags,cover_image,meta_title,meta_description,featured FROM wts_posts WHERE status='published' ORDER BY featured DESC,published_at DESC")->fetchAll();
+                $rows = $db->query("SELECT slug,title,category,published_at,reading_minutes,author,excerpt,body,tags,cover_image,audio_url,meta_title,meta_description,featured,comments_enabled FROM wts_posts WHERE status='published' ORDER BY featured DESC,published_at DESC")->fetchAll();
             }
             if ($rows) return $rows;
         } catch (PDOException $error) {
@@ -50,7 +50,7 @@ function findPost(string $slug): ?array
         if ($post['slug'] === $slug) return $post;
     }
     $db=database();
-    if($db && databaseUsesLegacySchema()) try { $s=$db->prepare("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body,tags,cover_image,meta_title,meta_description,featured FROM posts WHERE slug=? AND published=2");$s->execute([$slug]);return $s->fetch()?:null; } catch(PDOException $e) {}
+    if($db && databaseUsesLegacySchema()) try { $s=$db->prepare("SELECT slug,title,category,date AS published_at,CAST(SUBSTRING_INDEX(read_time,' ',1) AS UNSIGNED) AS reading_minutes,author,excerpt,content AS body,tags,cover_image,audio_url,meta_title,meta_description,featured,comments_enabled FROM posts WHERE slug=? AND published=2");$s->execute([$slug]);return $s->fetch()?:null; } catch(PDOException $e) {}
     return null;
 }
 

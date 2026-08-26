@@ -19,7 +19,7 @@ require __DIR__ . '/includes/header.php';
       <h1><?=e($homeContent['heading'])?></h1>
       <p class="hero-lead"><?=e($homeContent['lead'])?></p>
       <div class="button-row">
-        <a class="button button-primary" href="<?= url('blog/') ?>">Read the journal <span>→</span></a>
+        <a class="button button-primary" href="<?= url('blog/') ?>">Read the blog <span>→</span></a>
         <a class="button-link" href="<?= url('commitments.php') ?>">Our commitments <span>→</span></a>
       </div>
       <ul class="principle-list">
@@ -88,7 +88,7 @@ require __DIR__ . '/includes/header.php';
   </section>
 
   <section class="journal-callout">
-    <div><p class="kicker kicker-light">✦ &nbsp; From the journal</p><h2>Thoughtful teaching for an everyday faith.</h2></div>
+    <div><p class="kicker kicker-light">✦ &nbsp; From the blog</p><h2>Thoughtful teaching for an everyday faith.</h2></div>
     <div><p>Read reflections on Scripture, spiritual formation, truth, and life in the Spirit.</p><a class="button button-light" href="<?= url('blog/') ?>">Browse all reflections →</a></div>
   </section>
   </div>

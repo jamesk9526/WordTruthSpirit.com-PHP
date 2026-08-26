@@ -23,11 +23,13 @@ function ensureTagTable(): bool
 function ensureWriterPostColumns(): void
 {
     $db = database();
-    if (!$db || databaseUsesLegacySchema() || !databaseTableExists('wts_posts')) return;
+    if (!$db) return;
     try {
-        $columns = $db->query('SHOW COLUMNS FROM wts_posts')->fetchAll(PDO::FETCH_COLUMN);
-        $definitions = ['tags'=>'TEXT NULL','cover_image'=>'VARCHAR(2048) NULL','meta_title'=>'VARCHAR(500) NULL','meta_description'=>'TEXT NULL','featured'=>'TINYINT(1) NOT NULL DEFAULT 0'];
-        foreach ($definitions as $column => $definition) if (!in_array($column, $columns, true)) $db->exec("ALTER TABLE wts_posts ADD COLUMN {$column} {$definition}");
+        $table = databaseUsesLegacySchema() ? 'posts' : 'wts_posts';
+        if (!databaseTableExists($table)) return;
+        $columns = $db->query("SHOW COLUMNS FROM {$table}")->fetchAll(PDO::FETCH_COLUMN);
+        $definitions = ['tags'=>'TEXT NULL','cover_image'=>'VARCHAR(2048) NULL','audio_url'=>'VARCHAR(2048) NULL','meta_title'=>'VARCHAR(500) NULL','meta_description'=>'TEXT NULL','featured'=>'TINYINT(1) NOT NULL DEFAULT 0','comments_enabled'=>'TINYINT(1) NOT NULL DEFAULT 1'];
+        foreach ($definitions as $column => $definition) if (!in_array($column, $columns, true)) $db->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
     } catch (PDOException $exception) { error_log('Writer column migration failed: ' . $exception->getMessage()); }
 }
 

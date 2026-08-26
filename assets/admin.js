@@ -1,10 +1,32 @@
 (() => {
-  const menuButton = document.querySelector('.admin-menu-button');
-  const sidebar = document.querySelector('.admin-sidebar');
-  menuButton?.addEventListener('click', () => {
-    const open = sidebar.classList.toggle('open');
-    menuButton.setAttribute('aria-expanded', String(open));
+const menuButton = document.querySelector('.admin-menu-button');
+const sidebar = document.querySelector('.admin-sidebar');
+const sidebarBackdrop = document.querySelector('.admin-sidebar-backdrop');
+const setSidebarOpen = open => {
+  sidebar?.classList.toggle('open', open);
+  menuButton?.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('admin-nav-open', open);
+};
+menuButton?.addEventListener('click', () => setSidebarOpen(!sidebar?.classList.contains('open')));
+sidebarBackdrop?.addEventListener('click', () => setSidebarOpen(false));
+sidebar?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setSidebarOpen(false)));
+document.addEventListener('keydown', event => { if (event.key === 'Escape') setSidebarOpen(false); });
+
+const chatThread = document.querySelector('[data-chat-thread]');
+if (chatThread) chatThread.scrollTop = chatThread.scrollHeight;
+const chatReply = document.querySelector('[data-chat-reply]');
+if (chatReply) {
+  const replyField = chatReply.querySelector('[data-reply-field]');
+  const replyCount = chatReply.querySelector('[data-reply-count]');
+  const sendButton = chatReply.querySelector('button[type="submit"],button[name="action"]');
+  const refreshReplyCount = () => { if (replyCount) replyCount.textContent = replyField.value.length.toLocaleString(); };
+  replyField?.addEventListener('input', refreshReplyCount);
+  chatReply.addEventListener('submit', () => {
+    if (!chatReply.checkValidity()) return;
+    if (sendButton) { sendButton.disabled = true; sendButton.textContent = 'Sending…'; }
   });
+  refreshReplyCount();
+}
 
   const moderation = document.querySelector('[data-comment-moderation]');
   if (moderation) {
@@ -73,6 +95,10 @@
   const status = form.querySelector('[data-editor-status]');
   const title = form.querySelector('[data-slug-source]');
   const slug = form.querySelector('[data-slug-field]');
+  const category = form.querySelector('[data-editor-category]');
+  const categoryPill = form.querySelector('[data-category-pill]');
+  const settingsPanel = form.querySelector('[data-editor-settings]');
+  const settingsToggle = form.querySelector('[data-editor-settings-toggle]');
   const modeButtons = [...form.querySelectorAll('[data-editor-mode]')];
   const storageKey = `wts-editor-recovery:${location.pathname}${location.search}`;
   let sourceMode = false;
@@ -85,7 +111,7 @@
   const createBlock = (html = '<p></p>') => {
     const block = document.createElement('article');
     block.className = 'writer-block'; block.draggable = true;
-    block.innerHTML = `<button class="block-grip" type="button" aria-label="Drag to reorder" title="Drag to reorder">⠿</button><div class="block-content" contenteditable="true" data-block-content>${cleanHtml(html)}</div><div class="block-actions"><button type="button" data-block-up aria-label="Move block up">↑</button><button type="button" data-block-down aria-label="Move block down">↓</button><button type="button" data-block-remove aria-label="Remove block">×</button></div>`;
+    block.innerHTML = `<button class="block-grip" type="button" aria-label="Drag to reorder" title="Drag to reorder">⠿</button><div class="block-content" contenteditable="true" data-block-content>${cleanHtml(html)}</div><div class="block-actions"><button type="button" data-block-up aria-label="Move block up">↑</button><button type="button" data-block-down aria-label="Move block down">↓</button><button type="button" data-block-duplicate aria-label="Duplicate block">⧉</button><button type="button" data-block-remove aria-label="Remove block">×</button></div>`;
     return block;
   };
   const blockHtml = () => [...canvas.querySelectorAll('[data-block-content]')].map(item => item.innerHTML).join('\n').trim();
@@ -113,6 +139,7 @@
     if (nextSourceMode) { source.value = blockHtml(); canvas.hidden = true; source.hidden = false; }
     else { loadBlocks(source.value); source.hidden = true; canvas.hidden = false; }
     sourceMode = nextSourceMode;
+    form.classList.toggle('source-mode', sourceMode);
     modeButtons.forEach(button => button.classList.toggle('active', (button.dataset.editorMode === 'source') === sourceMode));
     updateInsights();
   };
@@ -133,7 +160,7 @@
 
   loadBlocks(canvas.innerHTML);
   const recovery = localStorage.getItem(storageKey);
-  if (recovery && !output.value.trim()) try { const draft = JSON.parse(recovery); if (draft.body && confirm('Restore the locally saved recovery draft for this reflection?')) { loadBlocks(draft.body); title.value = draft.title || ''; slug.value = draft.slug || ''; slugManuallyChanged = Boolean(slug.value); status.textContent = 'Recovery draft restored'; } } catch (_) { localStorage.removeItem(storageKey); }
+  if (recovery) try { const draft = JSON.parse(recovery); if (draft.body && draft.body !== output.value.trim() && confirm('Restore the locally saved recovery draft for this reflection?')) { loadBlocks(draft.body); title.value = draft.title || ''; slug.value = draft.slug || ''; slugManuallyChanged = Boolean(slug.value); status.textContent = 'Recovery draft restored'; } } catch (_) { localStorage.removeItem(storageKey); }
 
   canvas.addEventListener('focusin', event => { activeBlock = event.target.closest('.writer-block') || activeBlock; });
   canvas.addEventListener('input', touch);
@@ -141,6 +168,7 @@
     const block = event.target.closest('.writer-block'); if (block) activeBlock = block;
     if (event.target.closest('[data-block-up]')) { const previous = block.previousElementSibling; if (previous) canvas.insertBefore(block, previous); touch(); }
     if (event.target.closest('[data-block-down]')) { const next = block.nextElementSibling; if (next) canvas.insertBefore(next, block); touch(); }
+    if (event.target.closest('[data-block-duplicate]')) { const copy = createBlock(block.querySelector('[data-block-content]').innerHTML); block.after(copy); activeBlock = copy; touch(); }
     if (event.target.closest('[data-block-remove]')) { if (canvas.children.length === 1) block.querySelector('[data-block-content]').innerHTML = '<p></p>'; else block.remove(); activeBlock = canvas.lastElementChild; touch(); }
   });
   canvas.addEventListener('dragstart', event => { draggedBlock = event.target.closest('.writer-block'); if (draggedBlock) { draggedBlock.classList.add('dragging'); event.dataTransfer.effectAllowed = 'move'; } });
@@ -151,13 +179,35 @@
   form.querySelectorAll('[data-add-block]').forEach(button => button.addEventListener('click', () => { if (!sourceMode) insertBlock(button.dataset.addBlock); }));
   form.querySelectorAll('[data-command]').forEach(button => button.addEventListener('click', () => { if (sourceMode) return; focusActive(); document.execCommand(button.dataset.command, false); touch(); }));
   form.querySelectorAll('[data-block]').forEach(button => button.addEventListener('click', () => { if (sourceMode) return; focusActive(); document.execCommand('formatBlock', false, button.dataset.block); touch(); }));
+  form.querySelector('[data-format-block]')?.addEventListener('change', event => { if (sourceMode) return; focusActive(); document.execCommand('formatBlock', false, event.target.value); touch(); });
   form.querySelector('[data-link]')?.addEventListener('click', () => { if (sourceMode) return; const href = prompt('Paste the full URL for this link:'); if (!href || !/^https?:\/\//i.test(href)) return; focusActive(); document.execCommand('createLink', false, href); touch(); });
   form.querySelector('[data-focus-mode]')?.addEventListener('click', () => document.body.classList.toggle('writer-focus-mode'));
   modeButtons.forEach(button => button.addEventListener('click', () => setMode(button.dataset.editorMode === 'source')));
   source.addEventListener('input', touch);
-  title.addEventListener('input', () => { if (!slugManuallyChanged) slug.value = title.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); });
+  const resizeHeadline = () => { title.style.height = 'auto'; title.style.height = `${Math.max(110, title.scrollHeight)}px`; };
+  title.addEventListener('input', () => { if (!slugManuallyChanged) slug.value = title.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); resizeHeadline(); saveRecovery(); });
   slug.addEventListener('input', () => { slugManuallyChanged = true; });
+  category?.addEventListener('change', () => { categoryPill.textContent = category.options[category.selectedIndex].text; });
+  const setSettingsOpen = open => { form.classList.toggle('settings-closed', !open); settingsToggle?.setAttribute('aria-expanded', String(open)); };
+  settingsToggle?.addEventListener('click', () => setSettingsOpen(form.classList.contains('settings-closed')));
+  form.querySelector('[data-editor-settings-close]')?.addEventListener('click', () => setSettingsOpen(false));
+  if (window.matchMedia('(max-width: 850px)').matches) setSettingsOpen(false);
+  const coverPath = form.querySelector('[data-cover-path]');
+  const coverUpload = form.querySelector('[data-cover-upload]');
+  const coverThumb = form.querySelector('[data-editor-cover-thumb]');
+  const coverPreview = form.querySelector('[data-editor-cover-preview]');
+  const showCover = source => {
+    const thumbImage = coverThumb?.querySelector('img'), thumbEmpty = coverThumb?.querySelector('span'), previewImage = coverPreview?.querySelector('img');
+    if (thumbImage) { thumbImage.src = source; thumbImage.hidden = !source; }
+    if (thumbEmpty) thumbEmpty.hidden = Boolean(source);
+    if (previewImage) previewImage.src = source;
+    if (coverPreview) coverPreview.hidden = !source;
+  };
+  const resolveCoverPath = value => !value || /^(https?:)?\/\//i.test(value) || value.startsWith('/') ? value : `${form.dataset.baseUrl}${value.replace(/^\/+/,'')}`;
+  coverPath?.addEventListener('change', () => showCover(resolveCoverPath(coverPath.value.trim())));
+  coverUpload?.addEventListener('change', event => { const file = event.target.files?.[0]; if (!file) return; const reader = new FileReader(); reader.addEventListener('load', () => showCover(reader.result)); reader.readAsDataURL(file); });
+  form.querySelector('[data-remove-cover]')?.addEventListener('click', () => { coverPath.value = ''; if (coverUpload) coverUpload.value = ''; showCover(''); });
   form.addEventListener('submit', () => { syncOutput(); localStorage.removeItem(storageKey); status.textContent = 'Saving…'; });
   document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); form.requestSubmit(); } });
-  syncOutput(); updateInsights();
+  resizeHeadline(); syncOutput(); updateInsights();
 })();

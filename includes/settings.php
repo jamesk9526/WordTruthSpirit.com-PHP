@@ -6,7 +6,7 @@ function defaultSiteExperience(): array
 {
     return [
         'announcement' => ['enabled'=>true,'message'=>'Celebrate 250! For a limited time get the ebook, The Spirit of Truth for only $2.50!','actionLabel'=>'Get the eBook.','actionUrl'=>'https://www.amazon.com/dp/B0GCVNK21K?dplnkId=6cf4e3b0-74cc-491f-aa07-04ab89e08491','tone'=>'navy'],
-        'popup' => ['enabled'=>true,'id'=>'welcome','eyebrow'=>'Stay connected','title'=>'Scripturally grounded. Spiritually edifying.','body'=>'Choose email updates to hear about new reflections, promotions, and resources.','actionLabel'=>'Explore the journal','actionUrl'=>'/blog/','delaySeconds'=>6],
+        'popup' => ['enabled'=>true,'id'=>'welcome','eyebrow'=>'Stay connected','title'=>'Scripturally grounded. Spiritually edifying.','body'=>'Choose email updates to hear about new reflections, promotions, and resources.','actionLabel'=>'Explore the blog','actionUrl'=>'/blog/','delaySeconds'=>6],
         'subscription' => [
             'enabled'=>true,
             'eyebrow'=>'Stay connected',

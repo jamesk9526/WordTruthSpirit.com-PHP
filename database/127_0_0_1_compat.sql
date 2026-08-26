@@ -54,6 +54,20 @@ CREATE TABLE IF NOT EXISTS `wts_page_views` (
   KEY `idx_wts_views_path_day` (`page_path`(190),`viewed_on`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `wts_post_engagement` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `viewed_on` date NOT NULL,
+  `visitor_hash` char(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `post_slug` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `max_scroll` tinyint unsigned NOT NULL DEFAULT '0',
+  `active_seconds` smallint unsigned NOT NULL DEFAULT '0',
+  `completed` tinyint(1) NOT NULL DEFAULT '0',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_wts_post_engagement_day` (`viewed_on`,`visitor_hash`,`post_slug`),
+  KEY `idx_wts_post_engagement_slug_day` (`post_slug`,`viewed_on`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO `wts_books`
   (`slug`,`title`,`subtitle`,`description`,`cover_image`,`purchase_url`,`format_details`,`published_year`,`display_order`,`status`)
 VALUES

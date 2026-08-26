@@ -55,6 +55,27 @@ if (readingProgress) {
   };
   addEventListener('scroll', updateReadingProgress, { passive: true }); updateReadingProgress();
 }
+
+const engagementArticle = document.querySelector('[data-post-engagement]');
+if (engagementArticle) {
+  let maxScroll = 0, activeSeconds = 0, lastActiveAt = Date.now(), lastSent = 0;
+  const updateEngagement = () => {
+    const length = Math.max(1, engagementArticle.offsetHeight - window.innerHeight);
+    const current = Math.min(100, Math.max(0, Math.round(((window.scrollY - engagementArticle.offsetTop) / length) * 100)));
+    maxScroll = Math.max(maxScroll, current);
+  };
+  const sendEngagement = (force = false) => {
+    const now = Date.now(); if (!force && now - lastSent < 15000) return; lastSent = now;
+    const payload = new URLSearchParams({ slug: engagementArticle.dataset.postSlug, scroll: String(maxScroll), active_seconds: String(activeSeconds), completed: maxScroll >= 90 ? '1' : '0' });
+    fetch(engagementArticle.dataset.engagementUrl, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body: payload, keepalive: force, credentials: 'same-origin' }).catch(() => {});
+  };
+  const noteActivity = () => { const now = Date.now(); if (!document.hidden) activeSeconds += Math.min(30, Math.round((now - lastActiveAt) / 1000)); lastActiveAt = now; };
+  ['scroll', 'mousemove', 'keydown', 'touchstart'].forEach(event => addEventListener(event, () => { noteActivity(); updateEngagement(); }, { passive: true }));
+  addEventListener('visibilitychange', () => { noteActivity(); if (document.hidden) sendEngagement(true); });
+  addEventListener('pagehide', () => { noteActivity(); sendEngagement(true); });
+  setInterval(() => { noteActivity(); updateEngagement(); sendEngagement(); }, 15000);
+  updateEngagement();
+}
 document.querySelector('[data-copy-link]')?.addEventListener('click', async (event) => {
   try { await navigator.clipboard.writeText(location.href); event.currentTarget.textContent = 'Link copied'; }
   catch (_) { event.currentTarget.textContent = 'Copy unavailable'; }
@@ -93,6 +114,29 @@ if (commentCommunity) {
     }
     if (event.target.closest('[data-comment-reply-cancel]')) {
       clearReply();
+      return;
+    }
+    const reportButton = event.target.closest('[data-comment-report]');
+    if (reportButton && !reportButton.disabled) {
+      const reason = prompt('Why are you reporting this comment? Enter spam, abuse, misinformation, or other:');
+      if (!reason) return;
+      const normalizedReason = ['spam', 'abuse', 'misinformation'].includes(reason.trim().toLowerCase()) ? reason.trim().toLowerCase() : 'other';
+      const details = normalizedReason === 'other' ? (prompt('Briefly describe the concern (optional):') || '') : '';
+      reportButton.disabled = true;
+      try {
+        const response = await fetch(commentCommunity.dataset.reportUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+          body: new URLSearchParams({ comment_id: reportButton.dataset.commentId, comment_token: reportButton.dataset.commentToken, reason: normalizedReason, details })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.message || 'Report failed');
+        reportButton.textContent = 'Reported';
+        reportButton.setAttribute('aria-pressed', 'true');
+      } catch (error) {
+        alert(error.message || 'Unable to submit this report.');
+        reportButton.disabled = false;
+      }
       return;
     }
     const likeButton = event.target.closest('[data-comment-like]');

@@ -29,8 +29,8 @@ require __DIR__ . '/header.php';
     </div>
   </article>
   <?php if ($relatedPosts): ?>
-  <section class="doctrine-journal" aria-label="Related journal reflections">
-    <header><div><p class="kicker">From the journal</p><h2>Reflections on <?= e(ucfirst($pageKey)) ?></h2><p>More Scripture-rooted writing connected to this theme.</p></div><a class="button-link" href="<?= url('blog/') ?>">View all reflections →</a></header>
+  <section class="doctrine-journal" aria-label="Related blog reflections">
+    <header><div><p class="kicker">From the blog</p><h2>Reflections on <?= e(ucfirst($pageKey)) ?></h2><p>More Scripture-rooted writing connected to this theme.</p></div><a class="button-link" href="<?= url('blog/') ?>">View all reflections →</a></header>
     <div class="doctrine-masonry">
       <?php foreach ($relatedPosts as $post): ?><article class="doctrine-post-card"><p class="post-meta"><?= date('M j, Y', strtotime($post['published_at'])) ?> · <?= (int)$post['reading_minutes'] ?> min read</p><h3><?= e($post['title']) ?></h3><p><?= e($post['excerpt']) ?></p><a href="<?= url('blog/post.php?slug=' . urlencode($post['slug'])) ?>">Read reflection →</a></article><?php endforeach; ?>
     </div>

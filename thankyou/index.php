@@ -13,7 +13,7 @@ require ROOT_PATH . '/includes/header.php';
     <h1>Thank you for supporting the ministry.</h1>
     <p>Your generosity helps Word Truth Spirit continue providing Scripture-rooted teaching, reflections, and resources for readers seeking to grow in the Word and the Spirit.</p>
     <blockquote>“God loveth a cheerful giver.”<cite>— 2 Corinthians 9:7</cite></blockquote>
-    <div class="button-row"><a class="button button-primary" href="<?= url('blog/') ?>">Read the journal →</a><a class="button button-outline" href="<?= url() ?>">Return home</a></div>
+    <div class="button-row"><a class="button button-primary" href="<?= url('blog/') ?>">Read the blog →</a><a class="button button-outline" href="<?= url() ?>">Return home</a></div>
   </section>
 </main>
 <?php require ROOT_PATH . '/includes/footer.php'; ?>

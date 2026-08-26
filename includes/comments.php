@@ -34,6 +34,27 @@ function ensureCommentsTable(): bool
             UNIQUE KEY uq_wts_comment_reaction (comment_id,voter_hash),
             INDEX idx_wts_comment_reactions_comment (comment_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $db->exec("CREATE TABLE IF NOT EXISTS wts_comment_reports (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            comment_id BIGINT UNSIGNED NOT NULL,
+            reporter_hash CHAR(64) NOT NULL,
+            reason VARCHAR(40) NOT NULL DEFAULT 'other',
+            details VARCHAR(500) NULL,
+            status ENUM('open','reviewed','dismissed') NOT NULL DEFAULT 'open',
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_wts_comment_reporter (comment_id,reporter_hash),
+            INDEX idx_wts_comment_reports_status (status,created_at),
+            INDEX idx_wts_comment_reports_comment (comment_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $db->exec("CREATE TABLE IF NOT EXISTS wts_blocked_commenters (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            email_hash CHAR(64) NULL,
+            author_hash CHAR(64) NULL,
+            reason VARCHAR(255) NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY uq_wts_blocked_email (email_hash),
+            UNIQUE KEY uq_wts_blocked_author (author_hash)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         return true;
     } catch (PDOException $exception) {
         error_log('Comment storage setup failed: ' . $exception->getMessage());
@@ -123,6 +144,34 @@ function commentRateLimited(string $authorHash): bool
     return (int) $statement->fetchColumn() >= 5;
 }
 
+function commentEmailHash(string $email): string
+{
+    $secret = (string) (getenv('APP_KEY') ?: getenv('DB_NAME') ?: 'word-truth-spirit');
+    return hash_hmac('sha256', mb_strtolower(trim($email)), $secret);
+}
+
+function commenterIsBlocked(string $email, string $authorHash): bool
+{
+    $db = database();
+    if (!$db || !ensureCommentsTable()) return true;
+    $statement = $db->prepare('SELECT COUNT(*) FROM wts_blocked_commenters WHERE email_hash=? OR author_hash=?');
+    $statement->execute([commentEmailHash($email), $authorHash]);
+    return (bool) $statement->fetchColumn();
+}
+
+function commentLooksLikeSpam(string $name, string $body): bool
+{
+    $combined = $name . ' ' . $body;
+    $linkCount = preg_match_all('#https?://|www\.#i', $combined);
+    $repeatRun = preg_match('/(.)\1{12,}/u', $body);
+    return $linkCount > 3 || (bool) $repeatRun;
+}
+
+function commentsEnabledForPost(array $post): bool
+{
+    return !array_key_exists('comments_enabled', $post) || (bool) $post['comments_enabled'];
+}
+
 function commentReactionState(int $commentId): array
 {
     $db = database();
@@ -136,12 +185,13 @@ function commentReactionState(int $commentId): array
 
 function commentModerationCounts(): array
 {
-    $counts = ['all'=>0, 'pending'=>0, 'approved'=>0, 'spam'=>0];
+    $counts = ['all'=>0, 'pending'=>0, 'approved'=>0, 'spam'=>0, 'reported'=>0];
     $db = database();
     if (!$db || !ensureCommentsTable()) return $counts;
     foreach ($db->query("SELECT status,COUNT(*) AS total FROM wts_blog_comments WHERE status<>'trash' GROUP BY status")->fetchAll() as $row) {
         $counts[$row['status']] = (int) $row['total'];
         $counts['all'] += (int) $row['total'];
     }
+    $counts['reported'] = (int) $db->query("SELECT COUNT(DISTINCT comment_id) FROM wts_comment_reports WHERE status='open'")->fetchColumn();
     return $counts;
 }

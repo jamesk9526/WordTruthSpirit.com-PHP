@@ -31,12 +31,19 @@ if (
 
 $authorHash = commentVisitorHash();
 if (commentRateLimited($authorHash)) $return('rate');
+if (commenterIsBlocked($email, $authorHash)) $return('blocked');
 
 if (ensureCommentsTable()) {
     try {
-        database()->prepare('INSERT INTO wts_blog_comments (post_slug,parent_id,name,email,body,author_hash) VALUES (?,?,?,?,?,?)')
-            ->execute([$slug, $parentId ?: null, $name, $email, $body, $authorHash]);
-        $return($parentId ? 'reply-pending' : 'pending');
+        $post = findPost($slug);
+        if (!$post || !commentsEnabledForPost($post)) $return('closed');
+        $duplicate = database()->prepare('SELECT COUNT(*) FROM wts_blog_comments WHERE post_slug=? AND author_hash=? AND body=? AND created_at >= DATE_SUB(NOW(), INTERVAL 1 DAY)');
+        $duplicate->execute([$slug, $authorHash, $body]);
+        if ($duplicate->fetchColumn()) $return('duplicate');
+        $status = commentLooksLikeSpam($name, $body) ? 'spam' : 'pending';
+        database()->prepare('INSERT INTO wts_blog_comments (post_slug,parent_id,name,email,body,status,author_hash) VALUES (?,?,?,?,?,?,?)')
+            ->execute([$slug, $parentId ?: null, $name, $email, $body, $status, $authorHash]);
+        $return($status === 'spam' ? 'pending' : ($parentId ? 'reply-pending' : 'pending'));
     } catch (PDOException $exception) {
         error_log('Comment submission failed: ' . $exception->getMessage());
     }

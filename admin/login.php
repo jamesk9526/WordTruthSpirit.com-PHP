@@ -21,5 +21,5 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 }
 $adminTitle='Sign in';require __DIR__.'/_header.php';
 ?>
-<section class="admin-auth"><h1>Administration</h1><p>Manage publications and journal entries.</p><?php if(!database()):?><p class="notice error">MySQL is not configured. Follow the database instructions in README.md.</p><?php endif;?><?php if($error):?><p class="notice error"><?=e($error)?></p><?php endif;?><form method="post"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><label>Email or username<input name="email" required></label><label>Password<input type="password" name="password" required></label><button class="button button-primary">Sign in</button></form></section>
+<section class="admin-auth"><h1>Administration</h1><p>Manage publications and blog entries.</p><?php if(!database()):?><p class="notice error">MySQL is not configured. Follow the database instructions in README.md.</p><?php endif;?><?php if($error):?><p class="notice error"><?=e($error)?></p><?php endif;?><form method="post"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><label>Email or username<input name="email" required></label><label>Password<input type="password" name="password" required></label><button class="button button-primary">Sign in</button></form></section>
 <?php require __DIR__.'/_footer.php'; ?>

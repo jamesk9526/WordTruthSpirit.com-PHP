@@ -29,6 +29,10 @@ administrator. After that, sign in to:
 
 - Add, edit, publish, archive, reorder, or delete books
 - Add, edit, publish, archive, or delete journal reflections
+- Write reflections in the block editor with local recovery drafts, image uploads,
+  SEO fields, preview links, and per-reflection comment controls
+- Moderate reader discussion with threaded replies, reactions, reports, spam
+  screening, blocked commenters, bulk actions, and public administrator replies
 - See publication, journal, and unread-message totals
 
 Admin passwords are stored using PHP's current `PASSWORD_DEFAULT` hash.
@@ -49,6 +53,11 @@ button, destination, display order, and active/hidden status. Ads can optionally
 publish individual detail pages under `/ads/{slug}/` with expanded content and
 their original advertiser call-to-action. The Bible Memory promotion is supplied
 as the default sidebar ad rather than a sitewide footer ad.
+
+Browser notifications use the VAPID values `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY`,
+and `VAPID_PRIVATE_KEY` in `.env`. The private key stays server-side. Readers
+can opt in from the blog, and browser subscriptions are stored in
+`wts_push_subscriptions` for future push delivery.
 
 Subscribers receive a confirmation link before becoming active. Every email
 campaign includes a fresh unsubscribe link. Campaigns send only to active

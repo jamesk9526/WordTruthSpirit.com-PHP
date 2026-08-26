@@ -2,3 +2,5 @@
 .env
 .setup-complete
 .DS_Store
+*.zip
+*.zip
