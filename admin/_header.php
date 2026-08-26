@@ -16,12 +16,12 @@ if (!$dedicatedAdminEditor && adminLoggedIn()) {
   <title><?= e($adminTitle) ?> | WTS Admin</title>
   <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260826a') ?>">
   <link rel="stylesheet" href="<?= url('assets/commerce-admin.css?v=20260826a') ?>">
-  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826b') ?>">
+  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826c') ?>">
 </head>
 <body class="admin-body<?= $dedicatedAdminEditor ? ' editor-workspace-body' : '' ?>">
 <?php if (adminLoggedIn() && !$dedicatedAdminEditor): ?>
   <aside class="admin-sidebar" id="admin-sidebar">
-    <a class="admin-brand" href="<?= url('admin/') ?>"><img src="<?= url('assets/images/logo.png') ?>" alt=""><span>Word Truth Spirit<small>Secure workspace</small></span></a>
+    <a class="admin-brand" href="<?= url('admin/') ?>"><img src="<?= url('assets/images/spirit-dove.png') ?>" alt=""><span>Word Truth Spirit<small>Secure workspace</small></span></a>
     <img class="admin-winged-sprite" src="<?=url('assets/images/winged-lamp.png')?>" alt="" aria-hidden="true">
     <nav aria-label="Administration">
       <p>Workspace</p>
