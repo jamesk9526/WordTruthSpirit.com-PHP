@@ -61,7 +61,7 @@ function siteAds(): array
     if ($stored === null || $stored === '') return defaultSiteAds();
     $decoded = json_decode($stored,true);
     if (!is_array($decoded)) return defaultSiteAds();
-    $defaults = ['sponsor'=>'','theme'=>'navy','newWindow'=>false,'startsAt'=>'','endsAt'=>'','pageEnabled'=>false,'displayOrder'=>10];
+    $defaults = ['sponsor'=>'','theme'=>'navy','newWindow'=>false,'startsAt'=>'','endsAt'=>'','pageEnabled'=>false,'displayOrder'=>10,'archived'=>false];
     $ads = array_map(function(array $ad)use($defaults):array{$normalized=array_replace($defaults,$ad);if(!in_array($normalized['theme'],['navy','gold','light'],true))$normalized['theme']='navy';return $normalized;},array_values(array_filter($decoded,'is_array')));
     usort($ads,fn(array $left,array $right): int => ((int)($left['displayOrder']??10)) <=> ((int)($right['displayOrder']??10)));
     return $ads;
@@ -79,7 +79,7 @@ function adsForPlacement(string $placement): array
 
 function adIsCurrentlyVisible(array $ad): bool
 {
-    if (empty($ad['enabled'])) return false;
+    if (empty($ad['enabled']) || !empty($ad['archived'])) return false;
     $now = time();
     $starts = trim((string)($ad['startsAt']??''));$ends = trim((string)($ad['endsAt']??''));
     if ($starts !== '' && strtotime($starts) > $now) return false;
@@ -89,6 +89,7 @@ function adIsCurrentlyVisible(array $ad): bool
 
 function adStatusLabel(array $ad): string
 {
+    if (!empty($ad['archived'])) return 'Archived';
     if (empty($ad['enabled'])) return 'Hidden';
     $now=time();$starts=trim((string)($ad['startsAt']??''));$ends=trim((string)($ad['endsAt']??''));
     if($starts!==''&&strtotime($starts)>$now)return 'Scheduled';

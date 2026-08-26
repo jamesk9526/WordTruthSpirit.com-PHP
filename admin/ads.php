@@ -12,6 +12,19 @@ function validAdDateTime(string $value): bool
     return $date instanceof DateTime && $date->format('Y-m-d\TH:i') === $value;
 }
 
+function adEditorValue(array $ad, string $key, string $fallback = ''): string
+{
+    $value = $ad[$key] ?? $fallback;
+    return is_scalar($value) ? (string) $value : $fallback;
+}
+
+function adEditorDateTimeValue(array $ad, string $key): string
+{
+    $value = trim(adEditorValue($ad, $key));
+    $timestamp = $value === '' ? false : strtotime($value);
+    return $timestamp === false ? '' : date('Y-m-d\TH:i', $timestamp);
+}
+
 $ads = siteAds();
 $error = '';
 $saved = isset($_GET['saved']);
@@ -22,7 +35,7 @@ $blank = [
     'id'=>'','name'=>'','placement'=>'home_sidebar','enabled'=>true,
     'eyebrow'=>'Sponsored resource','title'=>'','body'=>'','image'=>'','imageAlt'=>'',
     'badge'=>'','sponsor'=>'','theme'=>'navy','actionLabel'=>'Learn more','actionUrl'=>'',
-    'newWindow'=>true,'startsAt'=>'','endsAt'=>'','pageEnabled'=>false,
+    'newWindow'=>true,'startsAt'=>'','endsAt'=>'','pageEnabled'=>false,'archived'=>false,
     'pageSlug'=>'','pageContent'=>'','displayOrder'=>10,
 ];
 $editing = $blank;
@@ -51,6 +64,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$toggled) $error = 'The ad to update could not be found.';
         elseif (!setSiteAds($ads)) $error = 'Could not update the ad.';
         else { header('Location:' . url('admin/ads.php?saved=1')); exit; }
+    } elseif ($action === 'archive') {
+        $archiveId = (string) ($_POST['id'] ?? ''); $changed = false;
+        foreach ($ads as &$ad) {
+            if (($ad['id'] ?? '') === $archiveId) { $ad['archived'] = empty($ad['archived']); if (!empty($ad['archived'])) $ad['enabled'] = false; $changed = true; break; }
+        }
+        unset($ad);
+        if (!$changed) $error = 'The ad to archive could not be found.';
+        elseif (!setSiteAds($ads)) $error = 'Could not archive the ad.';
+        else { header('Location:' . url('admin/ads.php?saved=1')); exit; }
     } elseif ($action === 'duplicate') {
         $copy = null;
         $duplicateId = (string) ($_POST['id'] ?? '');
@@ -60,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $copy['id'] = 'ad-' . bin2hex(random_bytes(5));
                 $copy['name'] = trim((string) ($copy['name'] ?? 'Ad')) . ' copy';
                 $copy['enabled'] = false;
+                $copy['archived'] = false;
                 $copy['pageEnabled'] = false;
                 $copy['pageSlug'] = '';
                 $ads[] = $copy;
@@ -80,7 +103,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($upload['error'] !== UPLOAD_ERR_OK) $error = 'The image upload did not complete.';
             elseif ((int) $upload['size'] > 5 * 1024 * 1024) $error = 'Ad images must be 5 MB or smaller.';
             else {
-                $mime = (new finfo(FILEINFO_MIME_TYPE))->file((string) $upload['tmp_name']);
+                $finfo = function_exists('finfo_open') ? finfo_open(FILEINFO_MIME_TYPE) : false;
+                $mime = $finfo ? finfo_file($finfo, (string) $upload['tmp_name']) : (function_exists('mime_content_type') ? mime_content_type((string) $upload['tmp_name']) : false);
+                if ($finfo) finfo_close($finfo);
                 $extensions = ['image/jpeg'=>'jpg','image/png'=>'png','image/webp'=>'webp','image/gif'=>'gif'];
                 if (!isset($extensions[$mime])) $error = 'Upload a JPG, PNG, WebP, or GIF image.';
                 else {
@@ -107,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'badge'=>trim((string) ($_POST['badge'] ?? '')),'sponsor'=>trim((string) ($_POST['sponsor'] ?? '')),
             'theme'=>in_array($_POST['theme'] ?? '', ['navy','gold','light'], true) ? (string) $_POST['theme'] : 'navy',
             'actionLabel'=>trim((string) ($_POST['action_label'] ?? '')),'actionUrl'=>$actionUrl,
-            'newWindow'=>isset($_POST['new_window']),'startsAt'=>$startsAt,'endsAt'=>$endsAt,
+            'newWindow'=>isset($_POST['new_window']),'startsAt'=>$startsAt,'endsAt'=>$endsAt,'archived'=>isset($_POST['archived']),
             'pageEnabled'=>$pageEnabled,'pageSlug'=>$pageSlug,
             'pageContent'=>trim((string) ($_POST['page_content'] ?? '')),
             'displayOrder'=>max(0, min(999, (int) ($_POST['display_order'] ?? 10))),
@@ -149,14 +174,14 @@ require __DIR__ . '/_header.php';
 <div class="ads-admin-layout">
   <section class="admin-panel ads-list">
     <header class="ads-list-heading"><div><p class="kicker">Manage placements</p><h2>Your ads</h2></div><span><?=count($ads)?> <?=count($ads) === 1 ? 'ad' : 'ads'?></span></header>
-    <div class="ads-filter-bar" data-ad-filters><input type="search" placeholder="Search ads" aria-label="Search ads" data-ad-search><select aria-label="Filter ads by placement" data-ad-placement><option value="">All placements</option><?php foreach($placementLabels as $key=>$label): ?><option value="<?=$key?>"><?=e($label)?></option><?php endforeach; ?></select><select aria-label="Filter ads by status" data-ad-status><option value="">Any status</option><option value="active">Live</option><option value="scheduled">Scheduled</option><option value="hidden">Hidden</option><option value="ended">Ended</option></select></div>
+    <div class="ads-filter-bar" data-ad-filters><input type="search" placeholder="Search ads" aria-label="Search ads" data-ad-search><select aria-label="Filter ads by placement" data-ad-placement><option value="">All placements</option><?php foreach($placementLabels as $key=>$label): ?><option value="<?=$key?>"><?=e($label)?></option><?php endforeach; ?></select><select aria-label="Filter ads by status" data-ad-status><option value="">Any status</option><option value="active">Live</option><option value="scheduled">Scheduled</option><option value="hidden">Hidden</option><option value="archived">Archived</option><option value="ended">Ended</option></select></div>
     <p class="ad-manager-tip">Tip: duplicate a finished campaign to preserve its creative and schedule the new version separately.</p>
     <div data-ad-list>
     <?php foreach ($ads as $ad): $adId=(string)($ad['id']??''); $status=strtolower(adStatusLabel($ad)); $isSelected=$editingId!==''&&$editingId!=='new'&&$editingId===$adId; ?>
-      <article class="<?=$isSelected?'selected':''?>" data-ad-row data-ad-placement="<?=e((string)$ad['placement'])?>" data-ad-status="<?=e($status)?>" data-ad-search="<?=e(mb_strtolower((string)($ad['name'].' '.$ad['title'].' '.$ad['sponsor']))?>">
+      <article class="<?=$isSelected?'selected':''?>" data-ad-row data-ad-placement="<?=e(adEditorValue($ad,'placement'))?>" data-ad-status="<?=e($status)?>" data-ad-search="<?=e(mb_strtolower(adEditorValue($ad,'name').' '.adEditorValue($ad,'title').' '.adEditorValue($ad,'sponsor')))?>">
         <div class="ads-list-image"><?php if($image=adAssetUrl((string)($ad['image']??''))): ?><img src="<?=e($image)?>" alt=""><?php else: ?><span>Ad</span><?php endif; ?></div>
         <div class="ads-list-copy"><small><?=e($placementLabels[$ad['placement']??'']??'Placement')?> · Order <?=(int)($ad['displayOrder']??10)?><?=!empty($ad['pageEnabled'])?' · Detail page':''?></small><h3><?=e($ad['name']??'Untitled ad')?></h3><p><?=e($ad['title']??'')?></p><span class="status-pill status-<?=e($status)?>"><?=e(adStatusLabel($ad))?></span></div>
-        <div class="ads-list-actions"><div class="ads-list-primary-actions"><?php if(!empty($ad['pageEnabled'])): ?><a class="button-link" href="<?=e(adPageUrl($ad))?>" target="_blank" rel="noopener">View</a><?php endif; ?><a class="button-link" href="<?=url('admin/ads.php?edit='.rawurlencode($adId).'#ad-editor')?>">Edit</a></div><div class="ads-list-secondary-actions"><form method="post" class="ad-row-form"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><input type="hidden" name="id" value="<?=e($adId)?>"><button name="action" value="toggle"><?=!empty($ad['enabled'])?'Hide':'Enable'?></button><button name="action" value="duplicate">Duplicate</button></form><form method="post" class="ad-delete-form" onsubmit="return confirm('Delete this ad? This cannot be undone.')"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><input type="hidden" name="id" value="<?=e($adId)?>"><button class="danger-link" type="submit" name="action" value="delete">Delete</button></form></div></div>
+        <div class="ads-list-actions"><div class="ads-list-primary-actions"><?php if(!empty($ad['pageEnabled'])&&!empty($ad['enabled'])&&empty($ad['archived'])): ?><a class="button-link" href="<?=e(adPageUrl($ad))?>" target="_blank" rel="noopener">View</a><?php endif; ?><a class="button-link" href="<?=url('admin/ads.php?edit='.rawurlencode($adId).'#ad-editor')?>">Edit</a></div><div class="ads-list-secondary-actions"><form method="post" class="ad-row-form"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><input type="hidden" name="id" value="<?=e($adId)?>"><button name="action" value="toggle" <?=!empty($ad['archived'])?'disabled title="Restore before enabling"':''?>><?=!empty($ad['enabled'])?'Hide':'Enable'?></button><button name="action" value="archive"><?=!empty($ad['archived'])?'Restore':'Archive'?></button><button name="action" value="duplicate">Duplicate</button></form><form method="post" class="ad-delete-form" onsubmit="return confirm('Delete this ad? This cannot be undone.')"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><input type="hidden" name="id" value="<?=e($adId)?>"><button class="danger-link" type="submit" name="action" value="delete">Delete</button></form></div></div>
       </article>
     <?php endforeach; ?>
     </div>
@@ -169,7 +194,7 @@ require __DIR__ . '/_header.php';
     <aside class="ad-live-preview ad-theme-<?=e((string)$editing['theme'])?>" data-ad-preview><span class="ad-preview-label">Live preview</span><?php if($image=adAssetUrl((string)$editing['image']): ?><img data-preview-image src="<?=e($image)?>" alt="" ><?php else: ?><img data-preview-image src="" alt="" hidden><?php endif; ?><div data-preview-badge><?=e((string)$editing['badge'])?></div><small data-preview-eyebrow><?=e((string)$editing['eyebrow'])?></small><h3 data-preview-title><?=e((string)($editing['title']?:'Your ad headline'))?></h3><p data-preview-body><?=e((string)($editing['body']?:'Your supporting message will appear here.'))?></p><button type="button" data-preview-action><?=e((string)$editing['actionLabel'])?> →</button></aside>
     <form method="post" enctype="multipart/form-data" data-ad-editor-form data-ad-draft-key="<?=e($editing['id']?:'new')?>" data-base-url="<?=e(url())?>"><input type="hidden" name="csrf" value="<?=csrfToken()?>"><input type="hidden" name="id" value="<?=e((string)$editing['id'])?>">
       <div class="ad-form-sections">
-        <section class="ad-form-section"><h3>Placement &amp; visibility</h3><p>Choose where this offer appears and when readers can see it.</p><label class="toggle-label"><input type="checkbox" name="enabled" <?=$editing['enabled']?'checked':''?>> Display this ad publicly</label><div class="admin-form-grid"><label>Internal name<input name="name" value="<?=e((string)$editing['name'])?>" placeholder="Summer book offer" required data-ad-name></label><label>Placement<select name="placement"><option value="home_top" <?=$editing['placement']==='home_top'?'selected':''?>>Homepage top banner</option><option value="home_sidebar" <?=$editing['placement']==='home_sidebar'?'selected':''?>>Homepage sidebar</option><option value="journal_top" <?=$editing['placement']==='journal_top'?'selected':''?>>Blog banner</option><option value="article_end" <?=$editing['placement']==='article_end'?'selected':''?>>End of blog articles</option></select></label></div><div class="admin-form-grid"><label>Starts<input type="datetime-local" name="starts_at" value="<?=e($editing['startsAt']?date('Y-m-d\TH:i',strtotime((string)$editing['startsAt'])):'')?>"></label><label>Ends<input type="datetime-local" name="ends_at" value="<?=e($editing['endsAt']?date('Y-m-d\TH:i',strtotime((string)$editing['endsAt'])):'')?>"></label></div></section>
+        <section class="ad-form-section"><h3>Placement &amp; visibility</h3><p>Choose where this offer appears and when readers can see it.</p><label class="toggle-label"><input type="checkbox" name="enabled" <?=$editing['enabled']?'checked':''?>> Display this ad publicly</label><div class="admin-form-grid"><label>Internal name<input name="name" value="<?=e((string)$editing['name'])?>" placeholder="Summer book offer" required data-ad-name></label><label>Placement<select name="placement"><option value="home_top" <?=$editing['placement']==='home_top'?'selected':''?>>Homepage top banner</option><option value="home_sidebar" <?=$editing['placement']==='home_sidebar'?'selected':''?>>Homepage sidebar</option><option value="journal_top" <?=$editing['placement']==='journal_top'?'selected':''?>>Blog banner</option><option value="article_end" <?=$editing['placement']==='article_end'?'selected':''?>>End of blog articles</option></select></label></div><div class="admin-form-grid"><label>Starts<input type="datetime-local" name="starts_at" value="<?=e(adEditorDateTimeValue($editing,'startsAt'))?>"></label><label>Ends<input type="datetime-local" name="ends_at" value="<?=e(adEditorDateTimeValue($editing,'endsAt'))?>"></label></div></section>
         <section class="ad-form-section"><h3>Creative</h3><p>Keep the headline direct and the visual accessible.</p><div class="admin-form-grid"><label>Eyebrow<input name="eyebrow" value="<?=e((string)$editing['eyebrow'])?>" placeholder="Sponsored resource"></label><label>Sponsor name<input name="sponsor" value="<?=e((string)$editing['sponsor'])?>" placeholder="Partner or ministry name"></label></div><div class="admin-form-grid"><label>Offer badge<input name="badge" value="<?=e((string)$editing['badge'])?>" placeholder="Save 20%"></label><label>Visual theme<select name="theme"><option value="navy" <?=$editing['theme']==='navy'?'selected':''?>>Navy</option><option value="gold" <?=$editing['theme']==='gold'?'selected':''?>>Gold</option><option value="light" <?=$editing['theme']==='light'?'selected':''?>>Light</option></select></label></div><label>Headline<input name="title" value="<?=e((string)$editing['title'])?>" required></label><label>Message<textarea name="body" rows="4"><?=e((string)$editing['body'])?></textarea></label><div class="admin-form-grid"><label>Image URL or site path<input name="image" value="<?=e((string)$editing['image'])?>" placeholder="assets/images/ad.jpg"></label><label>Upload image<input type="file" name="image_upload" accept="image/jpeg,image/png,image/webp,image/gif"><small>JPG, PNG, WebP, or GIF; up to 5 MB.</small></label></div><label>Image alternative text<input name="image_alt" value="<?=e((string)$editing['imageAlt'])?>" placeholder="Describe the image for screen readers"></label></section>
         <section class="ad-form-section"><h3>Destination</h3><p>Send readers to an offer, detail page, or a focused call to action.</p><div class="admin-form-grid"><label>Button label<input name="action_label" value="<?=e((string)$editing['actionLabel'])?>" required></label><label>Display order<input type="number" min="0" max="999" name="display_order" value="<?=(int)$editing['displayOrder']?>"></label></div><label>Destination URL<input name="action_url" value="<?=e((string)$editing['actionUrl'])?>" placeholder="https://example.com/offer" required></label><label class="toggle-label"><input type="checkbox" name="new_window" <?=$editing['newWindow']?'checked':''?>> Open an external destination in a new tab</label><label class="toggle-label"><input type="checkbox" name="page_enabled" <?=$editing['pageEnabled']?'checked':''?>> Publish a dedicated detail page for this ad</label><label>Page URL slug<input name="page_slug" value="<?=e((string)$editing['pageSlug'])?>" placeholder="summer-book-offer" data-ad-page-slug><small>Public address: /ads/your-slug/</small></label><label>Expanded page content<textarea name="page_content" rows="7" placeholder="Add fuller offer details, terms, background, or instructions. Basic HTML is supported."><?=e((string)$editing['pageContent'])?></textarea></label></section>
       </div>
