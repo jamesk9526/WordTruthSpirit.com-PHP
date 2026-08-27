@@ -2,6 +2,8 @@
 $adminTitle = $adminTitle ?? 'Dashboard';
 $currentAdminPage = $currentAdminPage ?? '';
 $dedicatedAdminEditor = $dedicatedAdminEditor ?? false;
+$adminName = (string) ($_SESSION['wts_admin_name'] ?? 'Administrator');
+$adminInitial = function_exists('mb_substr') ? mb_substr($adminName, 0, 1) : substr($adminName, 0, 1);
 if (!$dedicatedAdminEditor && adminLoggedIn()) {
   require_once ROOT_PATH . '/includes/updates.php';
   $adminUpdates = databaseUpdates(); $adminUpdateLedger = updateLedger();
@@ -16,7 +18,8 @@ if (!$dedicatedAdminEditor && adminLoggedIn()) {
   <title><?= e($adminTitle) ?> | WTS Admin</title>
   <link rel="stylesheet" href="<?= url('assets/styles.css?v=20260826a') ?>">
   <link rel="stylesheet" href="<?= url('assets/commerce-admin.css?v=20260826a') ?>">
-  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826c') ?>">
+  <link rel="stylesheet" href="<?= url('assets/refresh.css?v=20260826d') ?>">
+  <link rel="stylesheet" href="<?= url('assets/admin-refresh.css?v=20260826a') ?>">
 </head>
 <body class="admin-body<?= $dedicatedAdminEditor ? ' editor-workspace-body' : '' ?>">
 <?php if (adminLoggedIn() && !$dedicatedAdminEditor): ?>
@@ -49,6 +52,6 @@ if (!$dedicatedAdminEditor && adminLoggedIn()) {
   <button type="button" class="admin-sidebar-backdrop" aria-label="Close administration navigation"></button>
 <?php endif; ?>
 <div class="admin-shell<?= $dedicatedAdminEditor ? ' editor-workspace-shell' : '' ?>">
-  <?php if (adminLoggedIn() && !$dedicatedAdminEditor): ?><header class="admin-topbar"><button type="button" class="admin-menu-button" aria-controls="admin-sidebar" aria-expanded="false">Menu</button><div class="admin-topbar-context"><img class="admin-topbar-sprite" src="<?=url('assets/images/spirit-dove.png')?>" alt="" aria-hidden="true"><span><?= e($adminTitle) ?></span></div><a class="admin-profile-chip" href="<?=url('admin/accounts.php')?>"><span><?=e(strtoupper(mb_substr((string)($_SESSION['wts_admin_name']??'A'),0,1)))?></span><strong><?= e($_SESSION['wts_admin_name'] ?? 'Administrator') ?></strong></a></header><?php endif; ?>
+  <?php if (adminLoggedIn() && !$dedicatedAdminEditor): ?><header class="admin-topbar"><button type="button" class="admin-menu-button" aria-controls="admin-sidebar" aria-expanded="false"><span aria-hidden="true">☰</span> Menu</button><div class="admin-topbar-context"><img class="admin-topbar-sprite" src="<?=url('assets/images/spirit-dove.png')?>" alt="" aria-hidden="true"><span><?= e($adminTitle) ?></span></div><a class="admin-profile-chip" href="<?=url('admin/accounts.php')?>" aria-label="Open account settings for <?=e($adminName)?>"><span><?=e(strtoupper($adminInitial ?: 'A'))?></span><strong><?= e($adminName) ?></strong></a></header><?php endif; ?>
   <main class="admin-main<?= $dedicatedAdminEditor ? ' editor-workspace-main' : '' ?>">
   <?php if (!empty($adminPendingUpdates)): ?><aside class="admin-update-banner" role="status"><div><p class="kicker">There are updates</p><strong><?=count($adminPendingUpdates)?> new <?=count($adminPendingUpdates) === 1 ? 'improvement is' : 'improvements are'?> ready</strong><p><?php foreach(array_slice($adminPendingUpdates, 0, 3) as $updateKey): ?><span><?=e($adminUpdates[$updateKey][0])?></span><?php endforeach; ?></p></div><a class="button button-primary" href="<?=url('admin/updates.php')?>">See what’s new</a></aside><?php endif; ?>
